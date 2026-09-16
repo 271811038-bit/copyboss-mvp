@@ -1,7 +1,9 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-center gap-10 py-32 px-8 text-center">
+      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-center gap-10 py-24 px-8 text-center">
         {/* 品牌 */}
         <div className="flex flex-col items-center gap-4">
           <span className="rounded-full bg-black px-4 py-1 text-sm font-medium text-white dark:bg-white dark:text-black">
@@ -29,12 +31,12 @@ export default function Home() {
         </div>
 
         {/* 开始按钮 */}
-        <a
+        <Link
           className="flex h-12 w-full max-w-xs items-center justify-center rounded-full bg-black px-8 text-base font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          href="#"
+          href="/generate"
         >
           免费开始（每天 5 次）
-        </a>
+        </Link>
 
         <p className="text-xs text-zinc-400 dark:text-zinc-500">
           CopyBoss MVP · 由鹏总主刀开发中
