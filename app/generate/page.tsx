@@ -1,6 +1,7 @@
 "use client"; // 这个组件要在浏览器里跑（有用到 state 和点击事件）
 
 import { useState } from "react";
+import Pill from "@/components/Pill";
 
 // 这两行数组是“死的”，不会变——放在组件外面更省性能
 const 平台 = ["小红书", "公众号", "抖音文案"];
@@ -85,24 +86,14 @@ export default function GeneratePage() {
           <span className="text-xs text-zinc-400 dark:text-zinc-500">已选 {选中的平台.length}</span>
         </h2>
         <div className="flex flex-wrap gap-3">
-          {平台.map((名称) => {
-            const 已选 = 选中的平台.includes(名称);
-            return (
-              <button
-                key={名称}
-                type="button"
-                onClick={() => 切换(选中的平台, 设置选中的平台, 名称)}
-                className={
-                  已选
-                    ? "rounded-full bg-black px-4 py-2 text-sm text-white transition-colors dark:bg-white dark:text-black"
-                    : "rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40"
-                }
-              >
-                {已选 ? "✓ " : ""}
-                {名称}
-              </button>
-            );
-          })}
+          {平台.map((名称) => (
+            <Pill
+              key={名称}
+              名称={名称}
+              已选={选中的平台.includes(名称)}
+              onClick={() => 切换(选中的平台, 设置选中的平台, 名称)}
+            />
+          ))}
         </div>
       </section>
 
@@ -113,24 +104,14 @@ export default function GeneratePage() {
           <span className="text-xs text-zinc-400 dark:text-zinc-500">已选 {选中的风格.length}</span>
         </h2>
         <div className="flex flex-wrap gap-3">
-          {风格.map((名称) => {
-            const 已选 = 选中的风格.includes(名称);
-            return (
-              <button
-                key={名称}
-                type="button"
-                onClick={() => 切换(选中的风格, 设置选中的风格, 名称)}
-                className={
-                  已选
-                    ? "rounded-full bg-black px-4 py-2 text-sm text-white transition-colors dark:bg-white dark:text-black"
-                    : "rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40"
-                }
-              >
-                {已选 ? "✓ " : ""}
-                {名称}
-              </button>
-            );
-          })}
+          {风格.map((名称) => (
+            <Pill
+              key={名称}
+              名称={名称}
+              已选={选中的风格.includes(名称)}
+              onClick={() => 切换(选中的风格, 设置选中的风格, 名称)}
+            />
+          ))}
         </div>
       </section>
 

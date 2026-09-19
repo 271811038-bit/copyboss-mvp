@@ -34,6 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/generate" className="hover:text-black dark:hover:text-zinc-50">
               生成文案
             </Link>
+            <Link href="/history" className="hover:text-black dark:hover:text-zinc-50">
+              历史文案
+            </Link>
           </div>
         </nav>
 
