@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (sensitive: DB credentials, JWT secret)
+.env
 .env*
+!.env.example
+
+# SQLite dev database (local only, recreate with prisma migrate)
+prisma/dev.db
+/prisma/dev.db
+prisma/*.db
+/prisma/*.db
 
 # vercel
 .vercel

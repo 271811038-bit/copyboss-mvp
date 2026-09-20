@@ -1,0 +1,28 @@
+// CopyBoss 数据库蓝图（schema）
+// 每一行 model = 数据库里的一张表
+// 当前阶段只建 User 表；之后会加 Copy / Product / Subscription
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  // SQLite 本地文件：prisma/dev.db
+  // 上线生产时换成 Postgres，只需改 provider 和 DATABASE_URL
+  url      = env("DATABASE_URL")
+}
+
+// User 表 = 所有注册过的用户
+// @id          主键（每条记录的唯一身份证）
+// @default(cuid()) 自动生成一段不重复的随机 ID
+// @unique       email 不能重复（两个用户不能用同一个邮箱注册）
+// hashedPassword 不是明文密码，是加密后的"乱码"（更安全）
+// createdAt     注册时间，自动填当前时间
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  hashedPassword String
+  createdAt      DateTime @default(now())
+}

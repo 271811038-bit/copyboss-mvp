@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Nav from "@/components/Nav";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,22 +26,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* 导航栏：写在 layout 里，所有页面自动都有 */}
-        <nav className="flex items-center justify-between border-b border-black/10 px-6 py-4 dark:border-white/15">
-          <Link href="/" className="text-base font-semibold text-black dark:text-zinc-50">
-            CopyBoss
-          </Link>
-          <div className="flex items-center gap-6 text-sm text-zinc-600 dark:text-zinc-400">
-            <Link href="/generate" className="hover:text-black dark:hover:text-zinc-50">
-              生成文案
-            </Link>
-            <Link href="/history" className="hover:text-black dark:hover:text-zinc-50">
-              历史文案
-            </Link>
-          </div>
-        </nav>
-
-        {children}
+        {/* Providers 包住整个应用，让 useSession() 在任何组件里都能用 */}
+        <Providers>
+          <Nav />
+          {children}
+        </Providers>
       </body>
     </html>
   );
