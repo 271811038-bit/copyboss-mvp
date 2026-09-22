@@ -1,49 +1,21 @@
-// 注意：没有 "use client" —— 这是一个纯展示页面，数据是死的，不需要交互
+// 注意：没有 "use client" —— 数据在服务器上读好再发给浏览器（更快、更安全）
+// 从今晚起，这个页面读的是数据库里「你真真实实生成过的文案」
 
 import Link from "next/link";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 
-// 类型定义：一条历史文案长什么样
-type 历史条目 = {
-  id: string;
-  时间: string;
-  平台: string;
-  风格: string;
-  摘要: string;
-};
+export default async function HistoryPage() {
+  // 服务端直接验明身份（这个页面被中间件保护着，到这的基本都是登录用户）
+  const 会话 = await auth();
 
-// mock 数据（暂时写死在文件里，以后从数据库读）
-const 历史: 历史条目[] = [
-  {
-    id: "1",
-    时间: "今天 21:23",
-    平台: "小红书",
-    风格: "亲切口语",
-    摘要: "用了三个月，我脸上那两片斑真的淡了。以前出门必化妆，现在素颜敢出门……（展开）",
-  },
-  {
-    id: "2",
-    时间: "今天 21:20",
-    平台: "公众号",
-    风格: "专业干货",
-    摘要: "内容营销的 3 个隐形坑：选题对了但开场太长；价值给了但节奏太密；转化没问但话术太硬……（展开）",
-  },
-  {
-    id: "3",
-    时间: "今天 20:47",
-    平台: "抖音文案",
-    风格: "幽默吐槽",
-    摘要: "你以为老板赚的是钱吗？赚的是凌晨三点还在改方案的「执着」——3 个过来人血泪教训……（展开）",
-  },
-  {
-    id: "4",
-    时间: "昨天 22:11",
-    平台: "公众号",
-    风格: "情绪共鸣",
-    摘要: "创业第 7 年，我想对你说：别相信「坚持就是胜利」，坚持只是最低门槛……（展开）",
-  },
-];
+  // 从数据库读：当前用户的文案，按时间倒序（新的在前），最多先取 100 条
+  const 历史 = await prisma.copy.findMany({
+    where: { userId: 会话?.user?.id ?? "" },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
 
-export default function HistoryPage() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       {/* 标题 */}
@@ -52,7 +24,7 @@ export default function HistoryPage() {
           历史文案
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          你之前生成过的文案都在这里，不会丢。
+          你生成过的文案都存在数据库里，关机也不会丢。
         </p>
       </div>
 
@@ -72,17 +44,21 @@ export default function HistoryPage() {
               className="rounded-xl border border-black/10 p-4 transition-colors hover:border-black/30 dark:border-white/15 dark:hover:border-white/30"
             >
               <div className="mb-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                <span>{条.时间}</span>
+                {/* toLocaleString：让时间变成「2026/9/22 20:50:11」这种人话格式 */}
+                <span>{条.createdAt.toLocaleString("zh-CN")}</span>
                 <div className="flex gap-2">
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
-                    {条.平台}
+                    {条.platform}
                   </span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
-                    {条.风格}
+                    {条.style}
                   </span>
                 </div>
               </div>
-              <p className="text-sm leading-6 text-black dark:text-zinc-100">{条.摘要}</p>
+              {/* line-clamp-4：超过 4 行折叠显示，列表不至于被长文案撑爆 */}
+              <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-6 text-black dark:text-zinc-100">
+                {条.content}
+              </p>
             </article>
           ))}
         </div>
@@ -90,7 +66,7 @@ export default function HistoryPage() {
 
       {/* 底部提示 */}
       <p className="mt-8 text-center text-xs text-zinc-400 dark:text-zinc-500">
-        提示：每条文案右侧以后会加「收藏」「复制」「删除」按钮。
+        共 {历史.length} 条 · 提示：以后会加「收藏」「复制」「删除」按钮。
       </p>
     </main>
   );

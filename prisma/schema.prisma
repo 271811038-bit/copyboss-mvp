@@ -25,4 +25,20 @@ model User {
   name           String?
   hashedPassword String
   createdAt      DateTime @default(now())
+  copies         Copy[]   // 一个用户的所有文案（一对多）
+}
+
+// Copy 表 = 每一条生成出来的文案
+// userId  谁生成的（外键，关联到 User 表）
+// 平台/风格/内容  文案本身的三要素
+// createdAt 什么时候生成的（历史页按时间倒序排）
+model Copy {
+  id        String   @id @default(cuid())
+  userId    String
+  platform  String   // 小红书 / 公众号 / 抖音文案
+  style     String   // 亲切口语 / 专业干货 / 犀利促销 …
+  content   String   // 文案正文
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
