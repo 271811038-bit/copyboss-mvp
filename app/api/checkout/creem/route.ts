@@ -34,7 +34,9 @@ export async function GET() {
   }
 
   // ③ 调 Creem API 创建结账会话
-  const 响应 = await fetch("https://api.creem.io/v1/checkouts", {
+  //    测试 Key（creem_test_ 开头）必须走 test-api.creem.io，生产 Key 走 api.creem.io
+  const API域名 = API_KEY.startsWith("creem_test_") ? "https://test-api.creem.io" : "https://api.creem.io";
+  const 响应 = await fetch(`${API域名}/v1/checkouts`, {
     method: "POST",
     headers: {
       "x-api-key": API_KEY,
