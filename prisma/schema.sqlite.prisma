@@ -24,6 +24,13 @@ model User {
   name           String?
   hashedPassword String
   createdAt      DateTime @default(now())
+
+  // ===== 订阅相关（Lemon Squeezy）=====
+  plan                 String   @default("FREE") // FREE | PRO
+  lsCustomerId         String?  // Lemon Squeezy 的 customer id
+  lsSubscriptionId     String?  @unique // 订阅 id（一个订阅只对应一个用户）
+  lsSubscriptionStatus String?  // active / cancelled / expired / past_due / unpaid
+
   copies         Copy[]
   generations    Generation[]
 }

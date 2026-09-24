@@ -1,6 +1,7 @@
 "use client"; // 这个组件要在浏览器里跑（有用到 state 和点击事件）
 
 import { useState } from "react";
+import Link from "next/link";
 import Pill from "@/components/Pill";
 
 // 这两行数组是"死的"，不会变——放在组件外面更省性能
@@ -16,6 +17,7 @@ type 一条文案 = {
 
 // 额度信息（由服务端查好传进来，避免客户端再调一次接口）
 type 额度信息 = {
+  plan: string; // FREE | PRO
   已用: number;
   剩余: number;
   总数: number;
@@ -60,7 +62,11 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
   // 生成函数：async 版——因为要「等」后端（后端要等 AI，AI 要思考几秒）
   async function 生成() {
     if (额度.超额) {
-      设置错误("今日免费额度已用完，明天 0 点（北京时间）自动重置");
+      设置错误(
+        额度.plan === "PRO"
+          ? "今日 Pro 额度已用完，明天 0 点（北京时间）自动重置"
+          : "今日免费额度已用完，明天 0 点自动重置，或升级 Pro 解锁 30 次/天"
+      );
       return;
     }
 
@@ -85,9 +91,10 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
       // 后端会把最新的额度信息一并返回，避免下次请求前还显示旧的
       if (typeof 数据.已用 === "number" && typeof 数据.剩余 === "number") {
         设置额度({
+          plan: 数据.plan ?? 额度.plan,
           已用: 数据.已用,
           剩余: 数据.剩余,
-          总数: 额度.总数,
+          总数: 数据.总数 ?? 额度.总数,
           超额: 数据.超额 ?? false,
           下次重置: 额度.下次重置,
         });
@@ -158,14 +165,19 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
         }`}
       >
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-lg">{额度.超额 ? "🚫" : "🎁"}</span>
+          <span className="text-lg">{额度.超额 ? "🚫" : 额度.plan === "PRO" ? "👑" : "🎁"}</span>
           <span>
-            今日免费额度：
+            今日{额度.plan === "PRO" ? "Pro" : "免费"}额度：
             <strong>
               {额度.已用} / {额度.总数}
             </strong>
             ，剩余 <strong>{额度.剩余}</strong> 次
           </span>
+          {额度.plan === "PRO" && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
+              Pro 会员
+            </span>
+          )}
         </div>
         {!额度.超额 && (
           <span className="text-xs opacity-75">距离重置还有 {距离重置}</span>
@@ -174,6 +186,14 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
           <span className="text-xs font-medium opacity-90">
             明天 0 点（北京时间）自动重置
           </span>
+        )}
+        {额度.plan !== "PRO" && (
+          <Link
+            href="/pricing"
+            className="ml-3 shrink-0 rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+          >
+            升级 Pro · 30 次/天
+          </Link>
         )}
       </section>
 

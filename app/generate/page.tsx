@@ -21,6 +21,7 @@ export default async function GeneratePage() {
 
   // Date 不能直接通过 server→client 边界，转 ISO 字符串
   const 初始额度 = {
+    plan: 额度.plan,
     已用: 额度.已用,
     剩余: 额度.剩余,
     总数: 额度.总数,

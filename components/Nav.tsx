@@ -13,6 +13,7 @@ const 链接 = [
   { href: "/", label: "首页" },
   { href: "/generate", label: "生成文案" },
   { href: "/history", label: "历史文案" },
+  { href: "/pricing", label: "升级 Pro 👑" },
 ];
 
 export default function Nav() {

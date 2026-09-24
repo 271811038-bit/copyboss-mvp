@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { 今日生成次数, 每日免费次数 } from "@/lib/limits";
+import { 查额度 } from "@/lib/limits";
 import CopyCard from "@/components/CopyCard";
 
 // 缓存配置：每次请求都跑（数据库内容随时在变，不要缓存）
@@ -143,8 +143,8 @@ export default async function HistoryPage({
   const 总数 = await prisma.copy.count({ where: { userId: 用户ID } });
   // ② 已收藏数（全局）
   const 收藏数 = await prisma.copy.count({ where: { userId: 用户ID, isFavorite: true } });
-  // ③ 今日已用（复用 lib/limits.ts）
-  const 今日已用 = await 今日生成次数(用户ID);
+  // ③ 今日额度（复用 lib/limits.ts，自动按用户 plan 算上限）
+  const 额度 = await 查额度(用户ID);
   // ④ 最爱平台：按 platform 分组计数，取最多那条
   const 平台分组 = await prisma.copy.groupBy({
     by: ["platform"],
@@ -177,9 +177,13 @@ export default async function HistoryPage({
         <StatCard
           emoji="🎁"
           label="今日额度"
-          value={`${今日已用} / ${每日免费次数}`}
-          sub={今日已用 >= 每日免费次数 ? "明天重置" : "剩 " + (每日免费次数 - 今日已用) + " 次"}
-          highlight={今日已用 >= 每日免费次数}
+          value={`${额度.已用} / ${额度.总数}`}
+          sub={
+            额度.超额
+              ? "明天重置"
+              : "剩 " + 额度.剩余 + " 次" + (额度.plan === "PRO" ? " · Pro" : "")
+          }
+          highlight={额度.超额}
         />
         <StatCard emoji="❤️" label="已收藏" value={收藏数} />
         <StatCard

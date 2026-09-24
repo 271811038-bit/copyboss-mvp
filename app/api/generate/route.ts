@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { 生成文案 } from "@/lib/ai";
-import { 是否超额, 今日生成次数, 剩余次数, 每日免费次数 } from "@/lib/limits";
+import { 查额度 } from "@/lib/limits";
 
 // 每种「平台 × 风格」组合生成几条
 const 每组条数 = 5;
@@ -24,17 +24,18 @@ export async function POST(请求: Request) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
-  // ② 额度闸：今天用过 5 次就拒（防薅羊毛，保护 DeepSeek API 成本）
+  // ② 额度闸：免费版 5 次/天，Pro 30 次/天（防薅羊毛，保护 DeepSeek API 成本）
   //    即使前端做了置灰，API 也要独立校验——前端永远不能信
-  if (await 是否超额(会话.user.id)) {
-    const 已用 = await 今日生成次数(会话.user.id);
+  const 额度 = await 查额度(会话.user.id);
+  if (额度.超额) {
     return NextResponse.json(
       {
-        error: `今日 ${已用} 次额度已用完（上限 ${每日免费次数} 次），明天 0 点（北京时间）自动重置`,
+        error: `今日 ${额度.总数} 次额度已用完（${额度.plan === "PRO" ? "Pro 会员" : "免费版"}），明天 0 点（北京时间）自动重置`,
         错误们: ["额度已用完"],
-        已用,
-        剩余: await 剩余次数(会话.user.id),
+        已用: 额度.已用,
+        剩余: 0,
         超额: true,
+        plan: 额度.plan,
       },
       { status: 429 } // 429 Too Many Requests 是 HTTP 规范里的"超频"
     );
@@ -99,15 +100,16 @@ export async function POST(请求: Request) {
   }
 
   // ⑥ 生成后查一次额度（一次性返回，避免前端再查）
-  const 已用 = await 今日生成次数(会话.user.id);
-  const 剩余 = Math.max(0, 每日免费次数 - 已用);
+  const 新额度 = await 查额度(会话.user.id);
 
   return NextResponse.json({
     文案们: 存库结果,
     用的AI,
     错误们,
-    已用,
-    剩余,
-    超额: 已用 >= 每日免费次数,
+    已用: 新额度.已用,
+    剩余: 新额度.剩余,
+    总数: 新额度.总数,
+    超额: 新额度.超额,
+    plan: 新额度.plan,
   });
 }
