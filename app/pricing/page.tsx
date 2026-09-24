@@ -174,7 +174,7 @@ export default async function PricingPage() {
         </p>
         <p>
           <strong className="text-black dark:text-zinc-100">支持什么支付方式？</strong>{" "}
-          支付宝 / 银行卡 / 国际信用卡（由 Creem 收银台支持，自动处理税务）。
+          银行卡 / PayPal / Apple Pay 等（由 Creem 收银台支持，自动处理税务，按地区自动展示可用方式）。
         </p>
         <p>
           <strong className="text-black dark:text-zinc-100">发票？</strong>{" "}
