@@ -26,7 +26,8 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
   const 路由 = useRouter();
   const [展开, 设置展开] = useState(false);
   const [已复制, 设置已复制] = useState(false);
-  const [加载中, 设置加载中] = useState(false);
+  const [收藏中, 设置收藏中] = useState(false);
+  const [删除中, 设置删除中] = useState(false);
 
   // 复制按钮：把文案塞进剪贴板，2 秒后"已复制"提示自动消失
   async function 复制() {
@@ -42,7 +43,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
 
   // 收藏按钮：调 API → 成功后 router.refresh() 让 /history 重新渲染
   async function 切收藏() {
-    设置加载中(true);
+    设置收藏中(true);
     try {
       const 响应 = await fetch(`/api/copies/${条.id}/favorite`, {
         method: "POST",
@@ -53,7 +54,30 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
     } catch (错误) {
       alert(错误 instanceof Error ? 错误.message : "网络异常");
     } finally {
-      设置加载中(false);
+      设置收藏中(false);
+    }
+  }
+
+  // 删除按钮：二次确认（防误删）→ 调 DELETE → router.refresh()
+  async function 删除() {
+    const 确认 = window.confirm("确定删除这条文案？删除后无法恢复。");
+    if (!确认) return;
+
+    设置删除中(true);
+    try {
+      const 响应 = await fetch(`/api/copies/${条.id}`, {
+        method: "DELETE",
+      });
+      if (!响应.ok) {
+        const 数据 = await 响应.json().catch(() => ({}));
+        throw new Error(数据.error || "删除失败");
+      }
+      // 让服务器组件重新拉数据——这条文案从列表消失
+      路由.refresh();
+    } catch (错误) {
+      alert(错误 instanceof Error ? 错误.message : "网络异常");
+    } finally {
+      设置删除中(false);
     }
   }
 
@@ -107,10 +131,20 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
         <button
           type="button"
           onClick={切收藏}
-          disabled={加载中}
+          disabled={收藏中}
           className="rounded-lg border border-black/15 px-3 py-1 text-xs transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-white/20 dark:hover:bg-zinc-900"
         >
           {条.isFavorite ? "❤️ 已收藏" : "🤍 收藏"}
+        </button>
+
+        {/* 删除按钮（红色警示，置最后） */}
+        <button
+          type="button"
+          onClick={删除}
+          disabled={删除中}
+          className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
+        >
+          {删除中 ? "删除中…" : "🗑️ 删除"}
         </button>
       </div>
     </article>
