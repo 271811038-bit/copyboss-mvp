@@ -25,7 +25,8 @@ model User {
   name           String?
   hashedPassword String
   createdAt      DateTime @default(now())
-  copies         Copy[]   // 一个用户的所有文案（一对多）
+  copies         Copy[]       // 一个用户的所有文案（一对多）
+  generations    Generation[] // 一个用户的所有生成请求日志（一对多）
 }
 
 // Copy 表 = 每一条生成出来的文案
@@ -45,5 +46,26 @@ model Copy {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 复合索引：按 userId+createdAt 排序查询更快（历史页的核心查询）
+  @@index([userId, createdAt])
+}
+
+// Generation 表 = 每一次"生成请求"的日志
+// 用途：精确统计"用户今天生成了几次"——与文案条数解耦
+// 业务定义：1 次 POST /api/generate 请求 = 1 条 Generation 记录
+// 一次请求可能产出 5/10/30 条文案，但只算 1 次额度
+// 这样符合用户对"按一次 = 一次"的直觉
+model Generation {
+  id         String   @id @default(cuid())
+  userId     String
+  // 请求的快照（用于审计：用户当时要 AI 生成什么）
+  platforms  String   // JSON 数组字符串 ["小红书","公众号"]
+  styles     String   // JSON 数组字符串 ["亲切口语"]
+  product    String   // 产品描述的前 200 字
+  copyCount  Int      // 这次请求实际写进 Copy 表的条数
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 核心查询："今天这个用户生成了几次"
   @@index([userId, createdAt])
 }
