@@ -28,11 +28,26 @@ const 风格规矩: Record<string, string> = {
 // 岗位说明书（system prompt）——一次写好，每次生成都用
 const 岗位说明书 = `你是一位服务中小老板和自由职业者的资深新媒体文案。
 你的任务：根据给到的产品信息、平台和风格，写出能直接发布、能带来客户的营销文案。
-要求：
+
+严格要求（违反任何一条都视为失败）：
 1. 内容必须基于产品信息里的真实卖点，不编造功能、不夸大承诺。
 2. 严格遵守指定平台的内容格式和指定风格的语气。
 3. 每条文案独立完整，互相不重复角度。
-4. 输出必须是严格的 JSON 数组格式，数组里每个元素是一条完整文案的字符串，不要输出任何 JSON 以外的解释文字。`;
+4. **输出必须是严格的 JSON 数组**——这是最重要的硬规则：
+   - 数组里有几个字符串元素 = 几条独立文案，不允许把多条塞进同一个字符串里
+   - 每个字符串元素是一条完整文案（含标题和正文），不允许用 --- 或换行符在同一个元素里分隔多条
+   - 数组元素之间用半角逗号 , 分隔
+   - 字符串内部的换行用 \\n 转义
+   - 绝对不要输出 JSON 以外的任何文字（不要解释、不要 "好的"、不要 markdown 代码块）
+
+正确示例（3 条就输出 3 个元素）：
+["标题1\\n正文1第一段\\n正文1第二段","标题2\\n正文2第一段\\n正文2第二段","标题3\\n正文3第一段\\n正文3第二段"]
+
+错误示例 1（多条塞一个元素，会被拒）：
+["标题1\\n正文1\\n---\\n标题2\\n正文2\\n---\\n标题3\\n正文3"]
+
+错误示例 2（外层包了 markdown 代码块，会被拒）：
+\`\`\`json\\n["...","..."]\\n\`\`\``;
 
 // 给 AI 的任务单（user prompt）——每次生成都现场拼装
 function 拼任务单(产品: string, 平台: string, 风格: string, 数量: number): string {
@@ -41,7 +56,10 @@ function 拼任务单(产品: string, 平台: string, 风格: string, 数量: nu
 平台：${平台}（${平台规矩[平台] || "通用社交媒体风格"}）
 风格：${风格}（${风格规矩[风格] || "自然真诚"}）
 
-请写 ${数量} 条不同角度的文案。只输出 JSON 数组，例如 ["文案1", "文案2"]。`;
+请写 ${数量} 条不同角度的文案。
+
+再次强调输出格式：必须是长度为 ${数量} 的 JSON 数组，每个元素是一条完整文案的字符串。例如 ["文案1","文案2"]。
+数组长度必须是 ${数量}，不多不少。`;
 }
 
 // 生成文案的类型：可能成功（文案数组），也可能失败（原因）
@@ -96,7 +114,7 @@ export async function 生成文案(参数: {
     const 数据 = await 响应.json();
     const 原文: string = 数据.choices?.[0]?.message?.content ?? "";
 
-    // AI 说好只回 JSON 数组，但要防它"不守规矩"——解析失败就降级
+    // AI 说好只回 JSON 数组，但要防它"不守规矩"——解析器已内置多重 fallback
     const 文案 = 解析JSON数组(原文);
     if (!文案 || 文案.length === 0) {
       return { ok: false, 原因: "AI 返回的内容无法解析为文案列表" };
@@ -108,18 +126,115 @@ export async function 生成文案(参数: {
   }
 }
 
-// 解析 AI 返回的 JSON 数组，容忍它偶尔在前后多嘴几句
+// ============================================================
+// JSON 解析器——专门对付 AI 不守规矩的 4 种毛病
+//
+// 1. AI 偶尔在前后多嘴几句
+// 2. AI 偶尔不转义真实换行符（宽松模式替换 LF 为 \\n）
+// 3. AI 偶尔返回多个独立 JSON 数组（逐个解析、抽取字符串、再合并）
+// 4. AI 偶尔包 markdown 代码块（去除 ```json ``` 包裹）
+// 5. 兜底：AI 把多条塞进 1 个超长字符串，按 --- 或 **标题：** 拆分
+// ============================================================
 function 解析JSON数组(原文: string): string[] | null {
+  // 先剥掉 markdown 代码块包裹
+  const 清洗后 = 原文.replace(/```json?\s*/gi, "").replace(/```/g, "").trim();
+
+  // 抠出所有独立的 [...] 片段
+  const 片段们 = 抠所有数组片段(清洗后);
+  if (片段们.length === 0) return null;
+
+  // 对每个片段尝试严格/宽松解析，抽取字符串元素
+  const 所有字符串: string[] = [];
+  for (const 片段 of 片段们) {
+    const 严格 = 尝试解析(片段);
+    if (严格) {
+      所有字符串.push(...严格);
+      continue;
+    }
+    // 严格失败？宽松换行后再试
+    const 宽松 = 片段.replace(/\r\n/g, "\\n").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
+    const 宽松解析 = 尝试解析(宽松);
+    if (宽松解析) {
+      所有字符串.push(...宽松解析);
+      continue;
+    }
+  }
+
+  // 如果合并后只有 1 条且超长，尝试兜底拆分（AI 把多条塞进 1 个字符串）
+  if (所有字符串.length === 1 && 所有字符串[0].length > 300) {
+    const 拆出来 = 拆分长字符串(所有字符串[0]);
+    if (拆出来.length > 1) return 拆出来;
+  }
+
+  return 所有字符串.length > 0 ? 所有字符串 : null;
+}
+
+// 从原文里抠出所有独立的 JSON 数组片段
+function 抠所有数组片段(文本: string): string[] {
+  const 片段们: string[] = [];
+  let pos = 0;
+  while (pos < 文本.length) {
+    const 开 = 文本.indexOf("[", pos);
+    if (开 === -1) break;
+    const 闭 = 找配对右括号(文本, 开);
+    if (闭 === -1) break;
+    片段们.push(文本.slice(开, 闭 + 1));
+    pos = 闭 + 1;
+  }
+  return 片段们;
+}
+
+// 从 [ 位置往右找配对 ]（处理嵌套 [ ] 和字符串内的 [ ]）
+function 找配对右括号(文本: string, 开位置: number): number {
+  let 深度 = 1;
+  let i = 开位置 + 1;
+  let 字符串内 = false;
+  let 转义 = false;
+  while (i < 文本.length) {
+    const 字符 = 文本[i];
+    if (转义) {
+      转义 = false;
+    } else if (字符 === "\\") {
+      转义 = true;
+    } else if (字符 === '"') {
+      字符串内 = !字符串内;
+    } else if (!字符串内) {
+      if (字符 === "[") 深度++;
+      else if (字符 === "]") {
+        深度--;
+        if (深度 === 0) return i;
+      }
+    }
+    i++;
+  }
+  return -1;
+}
+
+function 尝试解析(切片: string): string[] | null {
   try {
-    const 起点 = 原文.indexOf("[");
-    const 终点 = 原文.lastIndexOf("]");
-    if (起点 === -1 || 终点 === -1) return null;
-    const 解析 = JSON.parse(原文.slice(起点, 终点 + 1));
+    const 解析 = JSON.parse(切片);
     if (!Array.isArray(解析)) return null;
     return 解析.filter((条): 条 is string => typeof 条 === "string" && 条.trim().length > 0);
   } catch {
     return null;
   }
+}
+
+// 兜底拆分：AI 把多条文案塞进一个字符串时，按 --- 或 **标题：** 分割
+function 拆分长字符串(长文: string): string[] {
+  // 优先按 "---" 分割（AI 最常用的分隔符）
+  let 块 = 长文.split(/\n\s*---\s*\n/);
+  if (块.length > 1) return 块.map((s) => s.trim()).filter((s) => s.length > 0);
+
+  // 兜底按 "**标题：**" 分割
+  块 = 长文.split(/\n\s*\*\*标题[：:]\s*/);
+  if (块.length > 1) {
+    // 第一个块通常是开头寒暄，丢掉；后面的每个块前面补回 "**标题：**"
+    return 块.slice(1).map((s) => "**标题：**" + s.trim()).filter((s) => s.length > 0);
+  }
+
+  // 实在拆不动就原样返回
+  return [长文];
 }
 
 // mock 降级文案（没 key 时用，流程照跑）
