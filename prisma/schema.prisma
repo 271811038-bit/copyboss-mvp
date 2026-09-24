@@ -32,13 +32,18 @@ model User {
 // userId  谁生成的（外键，关联到 User 表）
 // 平台/风格/内容  文案本身的三要素
 // createdAt 什么时候生成的（历史页按时间倒序排）
+// isFavorite 是否收藏（收藏功能用，红心❤️）
 model Copy {
-  id        String   @id @default(cuid())
-  userId    String
-  platform  String   // 小红书 / 公众号 / 抖音文案
-  style     String   // 亲切口语 / 专业干货 / 犀利促销 …
-  content   String   // 文案正文
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  platform   String   // 小红书 / 公众号 / 抖音文案
+  style      String   // 亲切口语 / 专业干货 / 犀利促销 …
+  content    String   // 文案正文
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 复合索引：按 userId+createdAt 排序查询更快（历史页的核心查询）
+  @@index([userId, createdAt])
 }
