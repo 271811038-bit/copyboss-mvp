@@ -213,6 +213,13 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
         <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
           {产品描述.trim().length}/500 字 · 写得越具体（卖点、人群、价格），文案越准
         </p>
+        <p className="mt-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+          💡 小技巧：说明产品是什么、卖给谁、有什么独特卖点，AI 生成的文案会更贴合你的业务。生成结果由
+          AI 自动创作，发布前请自行检查内容准确性。生成的内容仅你可见，使用规则见
+          <a href="/acceptable-use" className="mx-1 underline hover:text-black dark:hover:text-zinc-50">
+            可接受使用政策
+          </a>。
+        </p>
       </section>
 
       {/* ② 选平台 */}

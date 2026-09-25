@@ -94,6 +94,25 @@ export default function LoginForm() {
           </Link>
         </p>
       </div>
+
+      {/* 产品简介：让新访客在登录页也能看懂这是做什么的 */}
+      <div className="mt-8 max-w-sm text-center">
+        <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          <strong className="text-black dark:text-zinc-50">CopyBoss</strong>{" "}
+          是一款 AI 文案工具：输入产品信息，30
+          秒生成小红书、公众号、抖音三个平台的营销文案。
+          <Link href="/" className="ml-1 underline text-black dark:text-zinc-50">
+            了解更多 →
+          </Link>
+        </p>
+        <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-500">
+          登录即表示同意我们的
+          <Link href="/terms" className="mx-1 underline">服务条款</Link>、
+          <Link href="/privacy" className="mx-1 underline">隐私政策</Link>与
+          <Link href="/acceptable-use" className="mx-1 underline">可接受使用政策</Link>
+          · 客服：271811038@qq.com
+        </p>
+      </div>
     </main>
   );
 }

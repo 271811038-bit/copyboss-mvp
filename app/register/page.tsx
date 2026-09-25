@@ -116,6 +116,15 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
+
+      {/* 条款声明：注册即同意 */}
+      <p className="mt-6 max-w-sm text-center text-xs leading-5 text-zinc-400 dark:text-zinc-500">
+        创建账号即表示你已阅读并同意我们的
+        <Link href="/terms" className="mx-1 underline">服务条款</Link>、
+        <Link href="/privacy" className="mx-1 underline">隐私政策</Link>与
+        <Link href="/acceptable-use" className="mx-1 underline">可接受使用政策</Link>
+        · 客服：271811038@qq.com
+      </p>
     </main>
   );
 }

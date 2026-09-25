@@ -169,6 +169,9 @@ export default async function HistoryPage({
         <p className="text-zinc-600 dark:text-zinc-400">
           你的文案都存在数据库里，关机也不会丢。
         </p>
+        <p className="text-xs leading-5 text-zinc-400 dark:text-zinc-500">
+          💡 点击卡片右上角 ❤️ 可以收藏最满意的版本；文案支持一键复制，粘贴到平台前建议先检查事实与表达。
+        </p>
       </div>
 
       {/* 仪表板（4 项统计卡片） */}
