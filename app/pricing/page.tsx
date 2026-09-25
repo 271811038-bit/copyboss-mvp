@@ -112,9 +112,17 @@ export default async function PricingPage() {
           </ul>
           <div className="mt-6">
             {plan === "PRO" ? (
-              <span className="block w-full rounded-full bg-amber-100 py-2.5 text-center text-sm font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
-                已开通 · 感谢支持
-              </span>
+              <div className="flex flex-col gap-2">
+                <span className="block w-full rounded-full bg-amber-100 py-2.5 text-center text-sm font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
+                  已开通 · 感谢支持
+                </span>
+                <a
+                  href="/api/portal/creem"
+                  className="block w-full rounded-full border border-black/20 py-2.5 text-center text-sm font-medium text-black transition-colors hover:bg-black hover:text-white dark:border-white/25 dark:text-zinc-100 dark:hover:bg-white dark:hover:text-black"
+                >
+                  管理订阅（取消/换卡/账单）
+                </a>
+              </div>
             ) : !会话?.user ? (
               <Link
                 href="/register"
@@ -170,7 +178,7 @@ export default async function PricingPage() {
       <section className="mt-8 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
         <p>
           <strong className="text-black dark:text-zinc-100">怎么取消？</strong>{" "}
-          在付款确认邮件里有订阅管理入口，一键取消，次月不再扣费，当月额度保留。
+          登录后在本页点「管理订阅」，进入订阅门户一键取消，次月不再扣费，当月额度保留。
         </p>
         <p>
           <strong className="text-black dark:text-zinc-100">支持什么支付方式？</strong>{" "}
