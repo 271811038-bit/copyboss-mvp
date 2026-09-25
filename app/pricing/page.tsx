@@ -102,8 +102,11 @@ export default async function PricingPage() {
             适合天天要发内容的生意人
           </p>
           <p className="mt-4 text-4xl font-bold text-black dark:text-zinc-50">
-            ¥19.9
+            $2.99
             <span className="text-base font-normal text-zinc-400"> /月</span>
+          </p>
+          <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+            美元计价（约合 ¥21，按实时汇率）· 支持银行卡 / PayPal / Apple Pay
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
             <li>🚀 每天 30 次生成（6 倍额度）</li>
@@ -135,7 +138,7 @@ export default async function PricingPage() {
                 href="/api/checkout/creem"
                 className="block w-full rounded-full bg-black py-2.5 text-center text-sm font-medium text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
               >
-                升级 Pro · ¥19.9/月
+                升级 Pro · $2.99/月
               </a>
             ) : (
               <span className="block w-full cursor-not-allowed rounded-full bg-black/10 py-2.5 text-center text-sm font-medium text-zinc-500 dark:bg-white/10 dark:text-zinc-400">
