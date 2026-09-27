@@ -51,7 +51,7 @@ export default function Home() {
             CopyBoss
           </span>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50">
-            让 CopyBoss 成为你可靠的 AI 文案优化师
+            一个可靠的 AI 文案优化师
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             30 秒，为同一个主题生成小红书、公众号、抖音三个平台、多种风格的营销文案。
