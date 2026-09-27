@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import WeChatGuideServer from "@/components/WeChatGuideServer";
+import ErrorProbe from "@/components/ErrorProbe";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -63,7 +65,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         {/* Providers 包住整个应用，让 useSession() 在任何组件里都能用 */}
         <Providers>
+          <ErrorProbe />
           <Nav />
+          <div className="mx-auto w-full max-w-sm px-4 pt-4">
+            <WeChatGuideServer />
+          </div>
           {children}
           <Footer />
           <Analytics />
