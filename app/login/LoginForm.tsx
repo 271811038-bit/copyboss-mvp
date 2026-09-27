@@ -8,6 +8,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import WeChatGuide from "@/components/WeChatGuide";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function LoginForm() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-8 bg-zinc-50 dark:bg-black">
       <div className="w-full max-w-sm rounded-xl border border-black/10 dark:border-white/15 bg-white dark:bg-zinc-900 p-8 shadow-sm">
+        <WeChatGuide />
         <h1 className="text-2xl font-semibold mb-2">欢迎回来</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
           登录你的 CopyBoss 账号
