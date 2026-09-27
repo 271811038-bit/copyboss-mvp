@@ -1,55 +1,22 @@
-// 注册页：填邮箱 + 密码 + 名字 → 调 API → 自动登录
+// 注册页（服务端组件 + Server Action 表单）
+// 渐进增强：JS 正常时 React 接管提交；JS 挂掉时原生 POST 也能完成注册+自动登录。
+// 错误提示通过 ?error= 查询参数服务端渲染（不依赖 JS）。
 
-"use client";
-
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { registerAction } from "./actions";
 
-export default function RegisterPage() {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [错误, 设置错误] = useState<string | null>(null);
-  const [加载中, 设置加载中] = useState(false);
+const 错误文案: Record<string, string> = {
+  invalid: "邮箱或密码格式不对（密码至少 6 位），请检查后重试。",
+  exists: "这个邮箱已经注册过了，直接去登录吧。",
+  server: "服务器开小差了，请稍后再试。",
+};
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    设置错误(null);
-    设置加载中(true);
-
-    // 第 1 步：调注册 API 创建账号
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      设置错误(data.error || "注册失败");
-      设置加载中(false);
-      return;
-    }
-
-    // 第 2 步：注册成功，立即登录（用户不用再点一次登录）
-    const 登录结果 = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    设置加载中(false);
-
-    if (登录结果?.error) {
-      设置错误("注册成功但登录失败，请去登录页手动登录");
-    } else {
-      router.push("/generate");
-      router.refresh();
-    }
-  }
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-8 bg-zinc-50 dark:bg-black">
@@ -59,13 +26,18 @@ export default function RegisterPage() {
           创建账号，开始生成你的文案
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {error && 错误文案[error] && (
+          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
+            {错误文案[error]}
+          </p>
+        )}
+
+        <form action={registerAction} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium">名字（选填）</span>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
               placeholder="想被怎么称呼？"
               className="rounded-lg border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-black dark:focus:border-white"
             />
@@ -75,9 +47,8 @@ export default function RegisterPage() {
             <span className="text-sm font-medium">邮箱</span>
             <input
               type="email"
+              name="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="rounded-lg border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-black dark:focus:border-white"
             />
@@ -87,25 +58,19 @@ export default function RegisterPage() {
             <span className="text-sm font-medium">密码</span>
             <input
               type="password"
+              name="password"
               required
               minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="至少 6 位"
               className="rounded-lg border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-black dark:focus:border-white"
             />
           </label>
 
-          {错误 && (
-            <p className="text-sm text-red-600 dark:text-red-400">{错误}</p>
-          )}
-
           <button
             type="submit"
-            disabled={加载中}
-            className="rounded-lg bg-black dark:bg-white text-white dark:text-black px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50"
+            className="rounded-lg bg-black dark:bg-white text-white dark:text-black px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200"
           >
-            {加载中 ? "创建中..." : "创建账号"}
+            创建账号
           </button>
         </form>
 
