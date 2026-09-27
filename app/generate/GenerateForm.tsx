@@ -50,6 +50,26 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
   // state ⑧：额度（API 返回后立即刷新，避免下次请求前还显示旧的）
   const [额度, 设置额度] = useState<额度信息>(初始额度);
 
+  // state ⑨：刚复制的是第几条（显示"✓ 已复制"反馈，2 秒后消失）
+  const [已复制, 设置已复制] = useState<number | null>(null);
+
+  // 一键复制（复制不计额度）
+  async function 复制文案(内容: string, 序号: number) {
+    try {
+      await navigator.clipboard.writeText(内容);
+    } catch {
+      // clipboard API 不可用时兜底（部分旧浏览器 / 非 https 环境）
+      const 文本框 = document.createElement("textarea");
+      文本框.value = 内容;
+      document.body.appendChild(文本框);
+      文本框.select();
+      document.execCommand("copy");
+      document.body.removeChild(文本框);
+    }
+    设置已复制(序号);
+    setTimeout(() => 设置已复制(null), 2000);
+  }
+
   // 通用切换函数：点已选的 → 取消；点未选的 → 加上
   function 切换(当前列表: string[], 设置函数: (新值: string[]) => void, 名称: string) {
     设置函数(
@@ -294,10 +314,20 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
 
         {/* 三元表达式：结果为空 → 显示占位框；不为空 → 显示文案列表 */}
         {结果.length === 0 ? (
-          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-black/15 text-sm text-zinc-400 dark:border-white/20 dark:text-zinc-500">
-            {额度.超额
-              ? "今日额度已用完，明天 0 点再来吧。"
-              : "还没有内容。填好产品说明、点上面的按钮，候选文案会出现在这里。"}
+          <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/15 text-sm text-zinc-400 dark:border-white/20 dark:text-zinc-500">
+            {额度.超额 ? (
+              <>
+                <span>今日额度已用完，明天 0 点重置。</span>
+                <a
+                  href="/pricing"
+                  className="rounded-full bg-black px-4 py-1.5 text-xs font-medium text-white transition hover:opacity-80 dark:bg-white dark:text-black"
+                >
+                  升级 Pro · 每天 30 次 →
+                </a>
+              </>
+            ) : (
+              "还没有内容。填好产品说明、点上面的按钮，候选文案会出现在这里。"
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -306,9 +336,17 @@ export default function GenerateForm({ 初始额度 }: { 初始额度: 额度信
                 key={序号}
                 className="rounded-xl border border-black/10 p-4 dark:border-white/15"
               >
-                <div className="mb-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{条.平台}</span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{条.风格}</span>
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{条.平台}</span>
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{条.风格}</span>
+                  </div>
+                  <button
+                    onClick={() => 复制文案(条.内容, 序号)}
+                    className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    {已复制 === 序号 ? "✓ 已复制" : "复制"}
+                  </button>
                 </div>
                 {/* whitespace-pre-wrap：保留 AI 输出里的换行，否则全挤成一坨 */}
                 <p className="whitespace-pre-wrap text-sm leading-6 text-black dark:text-zinc-100">{条.内容}</p>
