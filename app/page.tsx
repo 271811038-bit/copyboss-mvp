@@ -33,7 +33,7 @@ const 常见问题 = [
   },
   {
     问: "What's the difference between Free and Pro?",
-    答: "Free gives you 1 generation per day. Pro ($9.99/mo) gives you 10 per day, plus a $1 top-up pack (10 extra generations) when you need more. Cancel anytime.",
+    答: "Free gives you 1 generation per day. Pro is $9.99/mo with 10 per day, or $99/year with 20 per day — and when you need extra, top-up packs start at $1. Cancel anytime.",
   },
   {
     问: "Is my input public?",

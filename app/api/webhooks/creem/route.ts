@@ -40,23 +40,34 @@ function 验签(原始请求体: string, 签名头: string | null): boolean {
   }
 }
 
-// 事件 → 套餐 的映射（单一判断点，以后加年费/团队版在这里扩展）
+// 事件 → 套餐 的映射（单一判断点，以后加团队版在这里扩展）
 //
 // Creem 语义（比 LS 细）：
 // - subscription.paid       扣款成功 → 开权限（官方推荐用这个开权限）
 // - subscription.active     新订阅创建 → 也算（首次付款示例数据）
 // - subscription.trialing   试用期 → 先给权限（试用期结束自然收到 expired）
-// - subscription.scheduled_cancel 只是"预约取消"，当期仍有效 → 保持 PRO
+// - subscription.scheduled_cancel 只是"预约取消"，当期仍有效 → 保持当前付费套餐
 // - subscription.canceled   真取消了 → FREE（MVP 简化，宁可少给不可多给）
 // - refund.created          退款 → FREE
-function 事件转套餐(事件名: string): "PRO" | "FREE" | null {
+function 事件转套餐(
+  事件名: string,
+  商品ID: string | null,
+  元数据: Record<string, unknown> | undefined
+): "PRO" | "PRO_YEARLY" | "FREE" | null {
   switch (事件名) {
-    case "checkout.completed": // 一次性购买/订阅首单完成 → PRO
+    case "checkout.completed": // 一次性购买/订阅首单完成
     case "subscription.active":
     case "subscription.paid":
     case "subscription.trialing":
-    case "subscription.scheduled_cancel": // 当期还有效
-      return "PRO";
+    case "subscription.scheduled_cancel": { // 当期还有效
+      // 区分月付/包年：优先商品 ID 匹配，兜底看下单时塞的 metadata
+      const 年费商品ID = process.env.CREEM_YEARLY_PRODUCT_ID;
+      const 是包年 =
+        (商品ID && 年费商品ID && 商品ID === 年费商品ID) ||
+        元数据?.planType === "year" ||
+        元数据?.type === "year";
+      return 是包年 ? "PRO_YEARLY" : "PRO";
+    }
     case "subscription.canceled":
     case "subscription.expired":
     case "subscription.paused":
@@ -109,18 +120,28 @@ export async function POST(请求: Request) {
   const 事件名: string = 事件?.eventType ?? "";
   const 对象 = 事件?.object ?? {};
 
-  // ④a 加油包订单单独处理：一次性买断（$1/10次），不发订阅事件
-  //     识别依据：metadata.type === "pack"，或商品 ID 等于加油包产品
+  // ④a 加油包订单单独处理：一次性买断，不发订阅事件
+  //     两种规格：月付会员 $1/10 次、包年会员 $1/20 次
+  //     识别依据：metadata.type === "pack"/"pack20"，或商品 ID 等于对应加油包产品
   const 加油包产品ID = process.env.CREEM_PACK_PRODUCT_ID;
+  const 加油包20产品ID = process.env.CREEM_PACK20_PRODUCT_ID;
+  const 事件商品ID: string | undefined = 对象?.product?.id;
   const 是加油包订单 =
     事件名 === "checkout.completed" &&
     (对象?.metadata?.type === "pack" ||
-      (加油包产品ID && 对象?.product?.id === 加油包产品ID));
+      对象?.metadata?.type === "pack20" ||
+      (加油包产品ID && 事件商品ID === 加油包产品ID) ||
+      (加油包20产品ID && 事件商品ID === 加油包20产品ID));
 
   if (是加油包订单) {
     const 加油包元数据 = 对象?.metadata ?? {};
     const 买家ID: string | undefined = 加油包元数据?.userId;
     const 买家邮箱: string | undefined = 对象?.customer?.email;
+    const 加油包次数 =
+      加油包元数据?.type === "pack20" ||
+      (加油包20产品ID && 事件商品ID === 加油包20产品ID)
+        ? 20
+        : 10;
 
     let 买家 = null;
     if (买家ID) {
@@ -137,24 +158,35 @@ export async function POST(请求: Request) {
 
     await prisma.user.update({
       where: { id: 买家.id },
-      data: { extraCredits: { increment: 10 } },
+      data: { extraCredits: { increment: 加油包次数 } },
     });
 
-    console.log(`[Creem webhook] 加油包到账 → 用户 ${买家.email} 加油包 +10 次`);
-    return NextResponse.json({ ok: true, 加油包: "+10" });
+    console.log(`[Creem webhook] 加油包到账 → 用户 ${买家.email} 加油包 +${加油包次数} 次`);
+    return NextResponse.json({ ok: true, 加油包: `+${加油包次数}` });
   }
 
-  // ④ 判断这个事件该把用户设成什么套餐（null = 不关我们事）
-  const 新套餐 = 事件转套餐(事件名);
+  // ④ 认人前置：先取出订阅对象和元数据，套餐判定需要商品 ID + metadata
+  // checkout.completed 的订阅在 object.subscription；订阅事件主体就是 object
+  const 订阅对象 = 对象?.object === "checkout" ? 对象?.subscription ?? {} : 对象;
+  const 元数据 = 订阅对象?.metadata ?? 对象?.metadata ?? {};
+
+  // 套餐判定用的商品 ID（从多个位置兜底抠出来）
+  const 套餐商品ID: string | null =
+    对象?.product?.id ??
+    订阅对象?.product?.id ??
+    对象?.subscription?.product?.id ??
+    对象?.items?.[0]?.product?.id ??
+    订阅对象?.items?.[0]?.product?.id ??
+    null;
+
+  // 判断这个事件该把用户设成什么套餐（null = 不关我们事）
+  const 新套餐 = 事件转套餐(事件名, 套餐商品ID, 元数据);
   if (新套餐 === null) {
     // 礼貌返回 200（非 200 Creem 会重试 5 次，别烦它）
     return NextResponse.json({ ok: true, 忽略: 事件名 });
   }
 
   // ⑤ 认人：优先用下单时塞的 metadata.userId，兜底用邮箱找
-  // checkout.completed 的订阅在 object.subscription；订阅事件主体就是 object
-  const 订阅对象 = 对象?.object === "checkout" ? 对象?.subscription ?? {} : 对象;
-  const 元数据 = 订阅对象?.metadata ?? 对象?.metadata ?? {};
   const 我们的用户ID: string | undefined = 元数据?.userId;
   const 用户邮箱: string | undefined = 对象?.customer?.email;
 

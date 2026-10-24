@@ -21,6 +21,7 @@ import { prisma } from "./db";
 export const 每日次数表: Record<string, number> = {
   FREE: 1,
   PRO: 10,
+  PRO_YEARLY: 20, // 包年会员（$99/年）
 };
 
 // 免费版每日次数（保留这个导出，历史代码还在用）

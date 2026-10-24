@@ -116,9 +116,9 @@ export default function GenerateForm({
         }`}
       >
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-lg">{额度.超额 ? "🚫" : 额度.plan === "PRO" ? "👑" : "🎁"}</span>
+          <span className="text-lg">{额度.超额 ? "🚫" : 额度.plan === "FREE" ? "🎁" : "👑"}</span>
           <span>
-            Daily {额度.plan === "PRO" ? "Pro" : "free"} quota:
+            Daily {额度.plan === "PRO_YEARLY" ? "Pro Yearly" : 额度.plan === "PRO" ? "Pro" : "free"} quota:
             <strong>
               {" "}
               {额度.已用} / {额度.总数}
@@ -130,9 +130,9 @@ export default function GenerateForm({
               </span>
             )}
           </span>
-          {额度.plan === "PRO" && (
+          {额度.plan !== "FREE" && (
             <span className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-xs font-medium text-white">
-              Pro
+              {额度.plan === "PRO_YEARLY" ? "Pro Yearly" : "Pro"}
             </span>
           )}
         </div>
@@ -257,7 +257,7 @@ export default function GenerateForm({
         {状态.文案们.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/15 text-sm text-zinc-400 dark:border-white/20 dark:text-zinc-500">
             {额度.超额 ? (
-              额度.plan === "PRO" ? (
+              额度.plan !== "FREE" ? (
                 <>
                   <span>Daily Pro quota and top-up credits are used up. Resets at midnight UTC.</span>
                   <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ export default function GenerateForm({
                       href="/api/checkout/creem?type=pack"
                       className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
                     >
-                      Top-up · $1 / 10 gens →
+                      Top-up · $1 / {额度.plan === "PRO_YEARLY" ? 20 : 10} gens →
                     </a>
                     <a
                       href="/pricing"
