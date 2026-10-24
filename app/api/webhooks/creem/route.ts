@@ -76,6 +76,25 @@ export async function POST(请求: Request) {
 
   // ② 验签失败 = 伪造请求，直接拒绝
   if (!验签(原文, 签名)) {
+    // 诊断日志：真实事件验签失败时，能从 Vercel 日志里看到事件内容和买家信息（人工排查补单用）
+    // 注意：只打事件元信息，不打完整原文（原文可能含敏感字段）
+    try {
+      const 疑似 = JSON.parse(原文);
+      console.error(
+        "[Creem webhook] 验签失败（疑似真实事件，需排查）:",
+        JSON.stringify({
+          eventType: 疑似?.eventType ?? "unknown",
+          订单号: 疑似?.object?.order_number ?? 疑似?.object?.order?.order_number ?? null,
+          买家邮箱: 疑似?.object?.customer?.email ?? null,
+          客户ID: 疑似?.object?.customer?.id ?? null,
+          订阅ID: 疑似?.object?.subscription?.id ?? null,
+          商品ID: 疑似?.object?.product?.id ?? 疑似?.object?.items?.[0]?.product?.id ?? null,
+          metadata: 疑似?.object?.metadata ?? 疑似?.object?.subscription?.metadata ?? null,
+        })
+      );
+    } catch {
+      console.error("[Creem webhook] 验签失败且请求体不是合法 JSON（大概率是扫描器）");
+    }
     return NextResponse.json({ error: "签名校验失败" }, { status: 401 });
   }
 
