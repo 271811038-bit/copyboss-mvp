@@ -63,32 +63,11 @@ function StatCard({
 // 时间分段工具：把"今天 0 点"和"本周一 0 点"算出来，供后面按段分组用
 function 时间分界点() {
   const 现在 = new Date();
-  const 北京字符串 = 现在.toLocaleString("sv-SE", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const [日期] = 北京字符串.split(" ");
-  const 今日零点 = new Date(`${日期}T00:00:00+08:00`);
+  const utc日期 = 现在.toISOString().slice(0, 10); // "2026-10-25"
+  const 今日零点 = new Date(`${utc日期}T00:00:00Z`);
 
-  // 本周一 0 点（周一=1、周日=0）：倒退到周一
-  // 注意 new Date().getDay() 北京时间可能不准，要用 toLocaleString 拿北京是周几
-  const 北京星期几 = parseInt(
-    现在.toLocaleString("en-US", { timeZone: "Asia/Shanghai", weekday: "short" }).match(
-      /\d+/
-    )?.[0] ?? "1"
-  );
-  // en-US weekday short = "Sun" "Mon" 等，但 JS getDay() 0=Sun，用映射更稳
-  const 星期映射: Record<string, number> = {
-    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
-  };
-  const 星期名 = 现在.toLocaleString("en-US", {
-    timeZone: "Asia/Shanghai",
-    weekday: "short",
-  });
-  const 今天周几 = 星期映射[星期名] ?? 1;
-  // 倒退天数：周一=0 倒退 0 天，周二=1 倒退 1 天，...周日=6 倒退 6 天
+  // 本周一 0 点（UTC）：getUTCDay() 0=Sun
+  const 今天周几 = 现在.getUTCDay();
   const 倒退天数 = 今天周几 === 0 ? 6 : 今天周几 - 1;
   const 本周一零点 = new Date(今日零点.getTime() - 倒退天数 * 24 * 60 * 60 * 1000);
 
@@ -164,55 +143,55 @@ export default async function HistoryPage({
       {/* 标题 */}
       <div className="mb-6 flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          历史文案
+          Your Copy
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          你的文案都存在数据库里，关机也不会丢。
+          Everything you generate is saved to your account — it never gets lost.
         </p>
         <p className="text-xs leading-5 text-zinc-400 dark:text-zinc-500">
-          💡 点击卡片右上角 ❤️ 可以收藏最满意的版本；文案支持一键复制，粘贴到平台前建议先检查事实与表达。
+          💡 Tap the ❤️ on a card to save your best versions. One-click copy included — give it a quick fact-check before posting.
         </p>
       </div>
 
       {/* 仪表板（4 项统计卡片） */}
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard emoji="📝" label="总文案" value={总数} />
+        <StatCard emoji="📝" label="Total copies" value={总数} />
         <StatCard
           emoji="🎁"
-          label="今日额度"
+          label="Today's quota"
           value={`${额度.已用} / ${额度.总数}`}
           sub={
             额度.超额
-              ? "明天重置"
-              : "剩 " + 额度.剩余 + " 次" + (额度.plan === "PRO" ? " · Pro" : "")
+              ? "Resets at midnight UTC"
+              : `${额度.剩余} left` + (额度.plan === "PRO" ? " · Pro" : "")
           }
           highlight={额度.超额}
         />
-        <StatCard emoji="❤️" label="已收藏" value={收藏数} />
+        <StatCard emoji="❤️" label="Saved" value={收藏数} />
         <StatCard
           emoji="🏆"
-          label="最爱平台"
+          label="Top platform"
           value={最爱平台?.platform ?? "—"}
-          sub={最爱平台 ? `${最爱平台._count._all} 条` : "暂无数据"}
+          sub={最爱平台 ? `${最爱平台._count._all} copies` : "No data yet"}
         />
       </section>
 
       {/* 筛选 Tab */}
       <div className="mb-6 flex items-center gap-2">
         <TabLink href="/history" 选中={!仅收藏}>
-          全部 {总数}
+          All {总数}
         </TabLink>
         <TabLink href="/history?filter=fav" 选中={仅收藏}>
-          ❤️ 仅收藏 {收藏数}
+          ❤️ Saved {收藏数}
         </TabLink>
       </div>
 
       {/* 列表（按日期分组） */}
       {历史.length === 0 ? (
         <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/15 text-sm text-zinc-400 dark:border-white/20 dark:text-zinc-500">
-          <p>{仅收藏 ? "还没有收藏的文案。" : "还没有历史。"}</p>
+          <p>{仅收藏 ? "No saved copies yet." : "No history yet."}</p>
           <Link href="/generate" className="text-black underline dark:text-zinc-200">
-            去生成第一条 →
+            Generate your first copy →
           </Link>
         </div>
       ) : (
@@ -221,9 +200,9 @@ export default async function HistoryPage({
           {分组.今日.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                <span>📅 今天</span>
+                <span>📅 Today</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {分组.今日.length} 条
+                  {分组.今日.length} copies
                 </span>
               </h2>
               <div className="flex flex-col gap-3">
@@ -248,9 +227,9 @@ export default async function HistoryPage({
           {分组.本周.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                <span>🗓️ 本周</span>
+                <span>🗓️ This week</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {分组.本周.length} 条
+                  {分组.本周.length} copies
                 </span>
               </h2>
               <div className="flex flex-col gap-3">
@@ -275,9 +254,9 @@ export default async function HistoryPage({
           {分组.更早.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                <span>📦 更早</span>
+                <span>📦 Earlier</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {分组.更早.length} 条
+                  {分组.更早.length} copies
                 </span>
               </h2>
               <div className="flex flex-col gap-3">
@@ -301,7 +280,7 @@ export default async function HistoryPage({
       )}
 
       <p className="mt-8 text-center text-xs text-zinc-400 dark:text-zinc-500">
-        {仅收藏 ? `收藏 ${历史.length} 条` : `共 ${历史.length} 条`} · 最多展示 200 条
+        {仅收藏 ? `${历史.length} saved` : `${历史.length} copies`} · showing up to 200
       </p>
     </main>
   );

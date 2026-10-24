@@ -27,7 +27,7 @@ export async function 生成文案Action(
   const 会话 = await auth();
   if (!会话?.user?.id) {
     return {
-      error: "登录状态已失效，请重新登录",
+      error: "Your session has expired. Please log in again.",
       文案们: [],
       错误们: [],
       额度: null,
@@ -46,7 +46,7 @@ export async function 生成文案Action(
     产品.trim().length < 5
   ) {
     return {
-      error: "请至少选 1 个平台、1 个风格，产品描述至少写 5 个字",
+      error: "Pick at least 1 platform and 1 tone, and write a product description of at least 5 characters.",
       文案们: [],
       错误们: [],
       额度: null,
@@ -60,8 +60,8 @@ export async function 生成文案Action(
     return {
       error:
         额度检查.plan === "PRO"
-          ? `今日 ${额度检查.总数} 次会员额度已用完，加油包也用完了。明天 0 点（北京时间）重置，或再买一个加油包（$1 / 10 次）`
-          : `今日免费额度（${额度检查.总数} 次）已用完，明天 0 点（北京时间）自动重置；升级 Pro 每天 10 次`,
+          ? `Your daily ${额度检查.总数} Pro generations and top-up credits are all used up. Resets at midnight UTC — or grab another top-up pack ($1 / 10 generations)`
+          : `Your daily free quota (${额度检查.总数} generation) is used up. Resets automatically at midnight UTC — upgrade to Pro for 10 generations/day.`,
       文案们: [],
       错误们: [],
       额度: {
@@ -89,7 +89,7 @@ export async function 生成文案Action(
       });
 
       if (!结果.ok) {
-        错误们.push(`${平台}×${风格}：${结果.原因}`);
+        错误们.push(`${平台}×${风格}: ${结果.原因}`);
         continue;
       }
       结果.文案.forEach((内容) => 存库结果.push({ 平台, 风格, 内容 }));
@@ -125,7 +125,7 @@ export async function 生成文案Action(
   return {
     error:
       存库结果.length === 0
-        ? `生成失败：${错误们.join("；") || "请稍后重试"}`
+        ? `Generation failed: ${错误们.join("; ") || "please try again later"}`
         : "",
     文案们: 存库结果,
     错误们,

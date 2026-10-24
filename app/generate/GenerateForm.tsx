@@ -15,8 +15,8 @@ import Link from "next/link";
 import { 生成文案Action } from "./actions";
 import type { 生成结果状态, 额度快照 } from "./types";
 
-const 平台 = ["小红书", "公众号", "抖音文案"];
-const 风格 = ["亲切口语", "专业干货", "幽默吐槽", "情绪共鸣"];
+const 平台 = ["Instagram", "TikTok", "LinkedIn", "X", "YouTube"];
+const 风格 = ["Friendly", "Professional", "Witty", "Story"];
 
 // 还没生成过时的初始状态（error 空、无结果、额度用页面初始值）
 const 初始状态: 生成结果状态 = {
@@ -35,7 +35,7 @@ function 提交按钮({ 超额 }: { 超额: boolean }) {
       disabled={pending || 超额}
       className="mb-10 flex h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
     >
-      {pending ? "AI 正在写…（约 10-30 秒，请勿离开）" : "生成文案"}
+      {pending ? "AI is writing… (10-30s, don't leave this page)" : "Generate Copy"}
     </button>
   );
 }
@@ -82,15 +82,15 @@ export default function GenerateForm({
     setTimeout(() => 设置已复制(null), 2000);
   }
 
-  // 把下次重置时间转成"距离 X 小时 Y 分"
+  // 把下次重置时间转成"Xh Ym left"
   const 距离重置 = (() => {
     const 目标 = new Date(额度.下次重置).getTime();
     const 现在 = Date.now();
     const 差 = Math.max(0, 目标 - 现在);
     const 小时 = Math.floor(差 / (60 * 60 * 1000));
     const 分 = Math.floor((差 % (60 * 60 * 1000)) / (60 * 1000));
-    if (小时 > 0) return `${小时} 小时 ${分} 分`;
-    return `${分} 分`;
+    if (小时 > 0) return `${小时}h ${分}m`;
+    return `${分}m`;
   })();
 
   return (
@@ -98,10 +98,10 @@ export default function GenerateForm({
       {/* 页面标题 */}
       <div className="mb-6 flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          生成文案
+          Generate Copy
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          说清你的产品，挑好平台和风格，30 秒拿到候选文案。
+          Describe your product, pick platforms and tone, get publish-ready copy in 30 seconds.
         </p>
       </div>
 
@@ -118,29 +118,30 @@ export default function GenerateForm({
         <div className="flex items-center gap-2 text-sm">
           <span className="text-lg">{额度.超额 ? "🚫" : 额度.plan === "PRO" ? "👑" : "🎁"}</span>
           <span>
-            今日{额度.plan === "PRO" ? "Pro" : "免费"}额度：
+            Daily {额度.plan === "PRO" ? "Pro" : "free"} quota:
             <strong>
+              {" "}
               {额度.已用} / {额度.总数}
             </strong>
-            ，剩余 <strong>{额度.剩余}</strong> 次
+            , <strong>{额度.剩余}</strong> left
             {额度.plan === "PRO" && (额度.加油包剩余 ?? 0) > 0 && (
               <span className="ml-1 text-violet-600 dark:text-violet-400">
-                （含加油包 {额度.加油包剩余} 次）
+                (incl. {额度.加油包剩余} top-up credits)
               </span>
             )}
           </span>
           {额度.plan === "PRO" && (
             <span className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-xs font-medium text-white">
-              Pro 会员
+              Pro
             </span>
           )}
         </div>
         {!额度.超额 && (
-          <span className="text-xs opacity-75">距离重置还有 {距离重置}</span>
+          <span className="text-xs opacity-75">Resets in {距离重置}</span>
         )}
         {额度.超额 && (
           <span className="text-xs font-medium opacity-90">
-            明天 0 点（北京时间）自动重置
+            Resets automatically at midnight UTC
           </span>
         )}
         {额度.plan !== "PRO" && (
@@ -148,7 +149,7 @@ export default function GenerateForm({
             href="/pricing"
             className="ml-3 shrink-0 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-opacity hover:opacity-85"
           >
-            升级 Pro · 10 次/天
+            Upgrade Pro · 10/day
           </Link>
         )}
       </section>
@@ -158,7 +159,7 @@ export default function GenerateForm({
         {/* ① 产品描述 */}
         <section className="mb-5 rounded-xl border border-black/10 p-5 dark:border-white/15">
           <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            ① 你的产品是什么（写给 AI 看的产品说明）
+            ① What's your product? (brief for the AI)
           </h2>
           <textarea
             name="product"
@@ -166,25 +167,27 @@ export default function GenerateForm({
             maxLength={500}
             required
             minLength={5}
-            placeholder="例如：CopyBoss 是一个帮中小老板写营销文案的 AI 工具，输入产品信息就能一键生成小红书、公众号、抖音的文案，注册就能免费试用。"
+            placeholder="e.g. CopyBoss is an AI copywriting tool for small business owners — describe your product once and get ready-to-publish Instagram, TikTok and LinkedIn copy in 30 seconds."
             className="w-full resize-none rounded-lg border border-black/15 bg-transparent px-4 py-2.5 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-black/40 dark:border-white/20 dark:text-zinc-100 dark:focus:border-white/40"
           />
           <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
-            最多 500 字 · 至少 5 个字 · 写得越具体（卖点、人群、价格），文案越准
+            Max 500 chars · min 5 chars · the more specific (features, audience, price), the better the copy
           </p>
           <p className="mt-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            💡 小技巧：说明产品是什么、卖给谁、有什么独特卖点，AI 生成的文案会更贴合你的业务。生成结果由
-            AI 自动创作，发布前请自行检查内容准确性。生成的内容仅你可见，使用规则见
-            <a href="/acceptable-use" className="mx-1 underline hover:text-black dark:hover:text-zinc-50">
-              可接受使用政策
-            </a>。
+            💡 Tip: explain what the product is, who it's for and what makes it unique — the AI will
+            write copy that fits your business much better. Output is AI-generated; review it before
+            publishing. Only you can see what you generate. See our{" "}
+            <a href="/acceptable-use" className="underline hover:text-black dark:hover:text-zinc-50">
+              Acceptable Use Policy
+            </a>
+            .
           </p>
         </section>
 
         {/* ② 选平台 —— 原生 checkbox，选中态由浏览器自己维护（零 JS） */}
         <section className="mb-5 rounded-xl border border-black/10 p-5 dark:border-white/15">
           <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            ② 选平台（可多选，点击胶囊即选中/取消）
+            ② Pick platforms (multi-select, click a pill to toggle)
           </h2>
           <div className="flex flex-wrap gap-3">
             {平台.map((名称) => (
@@ -206,7 +209,7 @@ export default function GenerateForm({
         {/* ③ 选风格 —— 同上，原生 checkbox */}
         <section className="mb-8 rounded-xl border border-black/10 p-5 dark:border-white/15">
           <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            ③ 选风格（可多选）
+            ③ Pick tone (multi-select)
           </h2>
           <div className="flex flex-wrap gap-3">
             {风格.map((名称) => (
@@ -233,7 +236,7 @@ export default function GenerateForm({
         )}
         {状态.错误们.length > 0 && 状态.文案们.length > 0 && (
           <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-            部分组合生成失败：{状态.错误们.join("；")}
+            Some combinations failed: {状态.错误们.join("; ")}
           </div>
         )}
 
@@ -243,10 +246,10 @@ export default function GenerateForm({
       {/* 结果区 */}
       <section>
         <h2 className="mb-3 flex items-center justify-between text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          <span>候选文案</span>
+          <span>Your copy</span>
           {状态.文案们.length > 0 && (
             <span className="text-xs text-zinc-400 dark:text-zinc-500">
-              共 {状态.文案们.length} 条 · 已自动存入历史
+              {状态.文案们.length} saved to history
             </span>
           )}
         </h2>
@@ -256,35 +259,35 @@ export default function GenerateForm({
             {额度.超额 ? (
               额度.plan === "PRO" ? (
                 <>
-                  <span>今日会员额度和加油包都已用完，明天 0 点重置。</span>
+                  <span>Daily Pro quota and top-up credits are used up. Resets at midnight UTC.</span>
                   <div className="flex items-center gap-2">
                     <a
                       href="/api/checkout/creem?type=pack"
                       className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
                     >
-                      加油包 · $1 / 10 次 →
+                      Top-up · $1 / 10 gens →
                     </a>
                     <a
                       href="/pricing"
                       className="rounded-full border border-black/15 px-4 py-1.5 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     >
-                      管理订阅
+                      Manage subscription
                     </a>
                   </div>
                 </>
               ) : (
                 <>
-                  <span>今日免费额度（1 次）已用完，明天 0 点重置。</span>
+                  <span>Daily free quota (1 generation) used up. Resets at midnight UTC.</span>
                   <a
                     href="/pricing"
                     className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
                   >
-                    升级 Pro · 每天 10 次 →
+                    Upgrade Pro · 10 generations/day →
                   </a>
                 </>
               )
             ) : (
-              "还没有内容。填好产品说明、选好平台风格、点上面的按钮，候选文案会出现在这里。"
+              "Nothing here yet. Fill in your product, pick platforms and tone, hit the button — your copy will show up here."
             )}
           </div>
         ) : (
@@ -304,7 +307,7 @@ export default function GenerateForm({
                     onClick={() => 复制文案(条.内容, 序号)}
                     className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   >
-                    {已复制 === 序号 ? "✓ 已复制" : "复制"}
+                    {已复制 === 序号 ? "✓ Copied" : "Copy"}
                   </button>
                 </div>
                 <p className="whitespace-pre-wrap text-sm leading-6 text-black dark:text-zinc-100">{条.内容}</p>

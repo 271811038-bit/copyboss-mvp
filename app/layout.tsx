@@ -4,7 +4,6 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import WeChatGuideServer from "@/components/WeChatGuideServer";
 import ErrorProbe from "@/components/ErrorProbe";
 import { Providers } from "./providers";
 
@@ -21,34 +20,34 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mtboss.cn"),
   title: {
-    default: "CopyBoss — 你的 AI 文案优化师",
+    default: "CopyBoss — AI Copywriter for Instagram, TikTok, LinkedIn & X",
     template: "%s · CopyBoss",
   },
   description:
-    "CopyBoss 是一款 AI 文案工具：输入一个主题，30 秒同时生成小红书、公众号、抖音三大平台爆款文案。免费试用，每天 5 次。",
+    "CopyBoss is an AI copywriting tool: describe your product once and get ready-to-publish social media copy for Instagram, TikTok, LinkedIn, X and YouTube in 30 seconds. Free to try.",
   keywords: [
-    "AI文案",
-    "文案生成",
-    "小红书文案",
-    "公众号文案",
-    "抖音文案",
-    "AI写作",
-    "文案工具",
-    "一键生成文案",
+    "AI copywriter",
+    "AI copywriting tool",
+    "Instagram caption generator",
+    "TikTok script generator",
+    "LinkedIn post generator",
+    "social media copy generator",
+    "marketing copy AI",
+    "AI writing assistant",
   ],
   openGraph: {
-    title: "CopyBoss — 你的 AI 文案优化师",
+    title: "CopyBoss — AI Copywriter for Every Platform",
     description:
-      "输入一个主题，30 秒同时生成小红书、公众号、抖音三大平台爆款文案。免费试用。",
+      "Describe your product once. Get ready-to-publish copy for Instagram, TikTok, LinkedIn, X and YouTube in 30 seconds.",
     url: "https://mtboss.cn",
     siteName: "CopyBoss",
-    locale: "zh_CN",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "CopyBoss — 你的 AI 文案优化师",
-    description: "输入一个主题，30 秒生成三大平台爆款文案。免费试用。",
+    title: "CopyBoss — AI Copywriter for Every Platform",
+    description: "Describe your product once, get publish-ready social copy in 30 seconds.",
   },
   robots: {
     index: true,
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="zh-CN"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
@@ -67,9 +66,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           <ErrorProbe />
           <Nav />
-          <div className="mx-auto w-full max-w-sm px-4 pt-4">
-            <WeChatGuideServer />
-          </div>
           {children}
           <Footer />
           <Analytics />

@@ -1,6 +1,6 @@
 // 用户额度管理
-// 业务规则（2026-10-25 调整版）：
-//   FREE 免费版：每天 1 次生成（北京时间 0 点重置）
+// 业务规则（2026-10-25 国际版调整）：
+//   FREE 免费版：每天 1 次生成（UTC 0 点重置）
 //   PRO 会员：  每天 10 次生成
 //   加油包：    PRO 当日额度用尽后，可买加油包（$1 / 10 次），
 //               购买后立即到账 User.extraCredits，当日额度用尽时自动消耗，
@@ -10,7 +10,7 @@
 // 设计决策：
 // 1. 用独立的 Generation 表（不与 Copy 表耦合）
 //    1 次请求可能产出 5/10/30 条文案，但只算 1 次额度（符合"按一次=一次"的直觉）
-// 2. 时区用 UTC+8（北京时间），因为目标用户全在中国
+// 2. 时区用 UTC（国际化版本，全球用户统一以 UTC 0 点为日界线）
 // 3. 额度上限跟着用户的 plan 走（webhook 付费成功 → plan=PRO → 自动涨额度）
 // 4. 扣费顺序：先扣当日额度，超出部分扣加油包（Generation 表只记次数，
 //    加油包次数在生成成功后由 扣加油包若超额() 原子扣减）
@@ -34,19 +34,12 @@ export function 额度上限(plan: string | null | undefined): number {
   return 每日次数表[plan ?? "FREE"] ?? 每日次数表.FREE;
 }
 
-// 拿到"今天 0 点（北京时间）"对应的 UTC Date 对象
-// 例：现在是 2026-09-24 15:00 北京 → 返回 2026-09-24 00:00 北京 = 2026-09-23 16:00 UTC
+// 拿到"今天 0 点（UTC）"对应的 Date 对象
+// 例：现在是 2026-09-24 15:00 UTC → 返回 2026-09-24 00:00 UTC
 export function 今日零点UTC(): Date {
   const 现在 = new Date();
-  // toLocaleString + sv-SE 拿到形如 "2026-09-24 15:00:00" 的北京时间字符串
-  const 北京字符串 = 现在.toLocaleString("sv-SE", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const [日期] = 北京字符串.split(" ");
-  return new Date(`${日期}T00:00:00+08:00`);
+  const utc字符串 = 现在.toISOString().slice(0, 10); // "2026-09-24"
+  return new Date(`${utc字符串}T00:00:00Z`);
 }
 
 // 拿到"明天 0 点（北京时间）"对应的 UTC Date 对象（前端显示"距离重置还有多久"）

@@ -1,7 +1,7 @@
 // 全局导航栏
 // 客户端组件：根据登录态显示不同 UI
-//   未登录 → 显示 "登录 / 注册" 按钮
-//   已登录 → 显示 "用户名 + 登出"
+//   未登录 → 显示 "Log in / Sign up" 按钮
+//   已登录 → 显示 "用户名 + Log out"
 
 "use client";
 
@@ -10,10 +10,10 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 
 const 链接 = [
-  { href: "/", label: "首页" },
-  { href: "/generate", label: "生成文案" },
-  { href: "/history", label: "历史文案" },
-  { href: "/pricing", label: "升级 Pro 👑" },
+  { href: "/", label: "Home" },
+  { href: "/generate", label: "Generate" },
+  { href: "/history", label: "History" },
+  { href: "/pricing", label: "Pro 👑" },
 ];
 
 export default function Nav() {
@@ -58,7 +58,7 @@ export default function Nav() {
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="text-zinc-500 hover:text-black dark:hover:text-zinc-50"
                 >
-                  登出
+                  Log out
                 </button>
               </div>
             ) : (
@@ -67,13 +67,13 @@ export default function Nav() {
                   href="/login"
                   className="text-zinc-500 hover:text-black dark:hover:text-zinc-50"
                 >
-                  登录
+                  Log in
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-full bg-black dark:bg-white px-3 py-1 text-white dark:text-black text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200"
                 >
-                  注册
+                  Sign up
                 </Link>
               </div>
             )}

@@ -10,56 +10,60 @@
 // 每个平台对应一套"写作规矩"——这就是提示词工程的一部分：
 // 不告诉 AI 平台特点，它就会写出"放到哪个平台都不合适"的通用废话
 const 平台规矩: Record<string, string> = {
-  小红书:
-    "小红书笔记风格：标题带 emoji，正文口语化、真诚分享感，多用分段和短句，结尾带互动引导和相关话题标签（#标签 形式），总长度 150-300 字。",
-  公众号:
-    "公众号推文风格：标题吸引点击但不过分标题党，正文结构清晰、有小标题，观点明确，段落之间有逻辑递进，结尾引导关注或留言，总长度 300-500 字。",
-  抖音文案:
-    "抖音短视频口播文案风格：前 3 秒必须有钩子（提问/冲突/反常识），节奏快、句子短、有画面感，口语化像跟朋友聊天，结尾引导点赞关注，总长度 100-200 字。",
+  Instagram:
+    "Instagram post style: catchy hook-style caption with 1-2 relevant emojis, short punchy paragraphs with line breaks, authentic storytelling feel, end with a call-to-action and 5-10 relevant hashtags (#hashtag format), total length 100-220 words.",
+  TikTok:
+    "TikTok video script style: the first 3 seconds must have a strong hook (question/conflict/unexpected claim), fast pacing, short sentences, vivid and conversational like talking to a friend, spoken-word format, end with a call-to-action to follow, total length 60-140 words.",
+  LinkedIn:
+    "LinkedIn post style: professional but human tone, opens with a strong insight or contrarian take, clear structure with short paragraphs, shares concrete value or lessons learned, ends with a question to spark discussion, minimal hashtags (3-5), total length 120-250 words.",
+  X: "X (Twitter) post style: under 280 characters, one sharp idea per post, punchy and quotable, strong hook in the first line, optionally 1-2 emojis and up to 2 hashtags, no fluff.",
+  YouTube:
+    "YouTube video script style: hook in the first 5 seconds promising the payoff, clear section structure with timestamps-friendly transitions, conversational and energetic, end with subscribe call-to-action, total length 120-250 words.",
 };
 
 const 风格规矩: Record<string, string> = {
-  亲切口语: "语气像闺蜜聊天，用「你」不用「您」，可以有一点网络用语但别过度。",
-  专业干货: "语气专业可信，多给具体方法和数据，让读者觉得「学到了」。",
-  幽默吐槽: "自带梗和自嘲，先笑后卖货，但吐槽要无害、不贬低任何人。",
-  情绪共鸣: "先讲目标用户的真实痛点场景，再给情绪出口，最后自然带出产品。",
+  Friendly: "Tone like chatting with a close friend, use \"you\", casual and warm, light internet slang is fine but don't overdo it.",
+  Professional: "Credible expert tone, give concrete methods and data, make readers feel they learned something actionable.",
+  Witty: "Self-aware humor with clever observations, make them laugh first then sell, but keep the jokes harmless and never punch down.",
+  Story: "Start with a real painful-moment scenario the target user recognizes, build emotional resonance, then naturally introduce the product as the way out.",
 };
 
 // 岗位说明书（system prompt）——一次写好，每次生成都用
-const 岗位说明书 = `你是一位服务中小老板和自由职业者的资深新媒体文案。
-你的任务：根据给到的产品信息、平台和风格，写出能直接发布、能带来客户的营销文案。
+const 岗位说明书 = `You are a senior social-media copywriter serving small business owners and solo creators.
+Your task: based on the given product info, platform and tone, write ready-to-publish marketing copy that brings customers.
 
-严格要求（违反任何一条都视为失败）：
-1. 内容必须基于产品信息里的真实卖点，不编造功能、不夸大承诺。
-2. 严格遵守指定平台的内容格式和指定风格的语气。
-3. 每条文案独立完整，互相不重复角度。
-4. **输出必须是严格的 JSON 数组**——这是最重要的硬规则：
-   - 数组里有几个字符串元素 = 几条独立文案，不允许把多条塞进同一个字符串里
-   - 每个字符串元素是一条完整文案（含标题和正文），不允许用 --- 或换行符在同一个元素里分隔多条
-   - 数组元素之间用半角逗号 , 分隔
-   - 字符串内部的换行用 \\n 转义
-   - 绝对不要输出 JSON 以外的任何文字（不要解释、不要 "好的"、不要 markdown 代码块）
+Strict requirements (violating any single one means failure):
+1. Content must be based on the real selling points in the product info — never invent features or make exaggerated promises.
+2. Strictly follow the specified platform's content format and the specified tone.
+3. Each copy variation must be self-contained and approach the product from a different angle.
+4. Write the copy in English unless the product description is written in another language — in that case, match that language.
+5. **Output MUST be a strict JSON array** — this is the most important hard rule:
+   - The number of string elements in the array = the number of copy variations. Never merge multiple variations into one string.
+   - Each string element is one complete piece of copy (including headline and body). Never use --- or newlines to separate multiple pieces inside one element.
+   - Separate array elements with commas.
+   - Escape newlines inside strings as \\n.
+   - Absolutely NEVER output anything other than the JSON array (no explanations, no "Sure!", no markdown code fences).
 
-正确示例（3 条就输出 3 个元素）：
-["标题1\\n正文1第一段\\n正文1第二段","标题2\\n正文2第一段\\n正文2第二段","标题3\\n正文3第一段\\n正文3第二段"]
+Correct example (3 variations = 3 elements):
+["Headline 1\\nBody paragraph 1\\nBody paragraph 2","Headline 2\\nBody paragraph 1\\nBody paragraph 2","Headline 3\\nBody paragraph 1\\nBody paragraph 2"]
 
-错误示例 1（多条塞一个元素，会被拒）：
-["标题1\\n正文1\\n---\\n标题2\\n正文2\\n---\\n标题3\\n正文3"]
+Wrong example 1 (multiple pieces in one element, will be rejected):
+["Headline 1\\nBody 1\\n---\\nHeadline 2\\nBody 2\\n---\\nHeadline 3\\nBody 3"]
 
-错误示例 2（外层包了 markdown 代码块，会被拒）：
+Wrong example 2 (wrapped in a markdown code block, will be rejected):
 \`\`\`json\\n["...","..."]\\n\`\`\``;
 
 // 给 AI 的任务单（user prompt）——每次生成都现场拼装
 function 拼任务单(产品: string, 平台: string, 风格: string, 数量: number): string {
-  return `产品信息：${产品}
+  return `Product info: ${产品}
 
-平台：${平台}（${平台规矩[平台] || "通用社交媒体风格"}）
-风格：${风格}（${风格规矩[风格] || "自然真诚"}）
+Platform: ${平台} (${平台规矩[平台] || "General social media style, conversational and engaging."})
+Tone: ${风格} (${风格规矩[风格] || "Natural and authentic."})
 
-请写 ${数量} 条不同角度的文案。
+Please write ${数量} copy variations from different angles.
 
-再次强调输出格式：必须是长度为 ${数量} 的 JSON 数组，每个元素是一条完整文案的字符串。例如 ["文案1","文案2"]。
-数组长度必须是 ${数量}，不多不少。`;
+Format reminder once more: the output MUST be a JSON array of length ${数量}, each element being one complete copy variation as a string. Example: ["copy 1","copy 2"].
+The array length must be exactly ${数量}, no more, no less.`;
 }
 
 // 生成文案的类型：可能成功（文案数组），也可能失败（原因）
@@ -240,7 +244,6 @@ function 拆分长字符串(长文: string): string[] {
 // mock 降级文案（没 key 时用，流程照跑）
 function mock文案(产品: string, 平台: string, 风格: string, 数量: number): string[] {
   return Array.from({ length: 数量 }, (_, i) => {
-    const 序 = i + 1;
-    return `【演示文案 ${序}｜AI 未接入】产品「${产品}」的${平台}文案（${风格}风格）。在 .env.local 里填入 DEEPSEEK_API_KEY 后，这里就会变成真正的 AI 文案。`;
+    return `[Demo copy ${i + 1} | AI not connected] ${平台} copy (${风格} tone) for "${产品}". Add DEEPSEEK_API_KEY to your environment and real AI copy will appear here.`;
   });
 }

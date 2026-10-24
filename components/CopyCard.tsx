@@ -69,7 +69,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
       setTimeout(() => 设置已复制(false), 2000);
     } catch {
       // 极少数浏览器不允许剪贴板 API——给个兜底提示
-      alert("复制失败，请手动选中复制");
+      alert("Copy failed — please select the text and copy manually.");
     }
   }
 
@@ -80,10 +80,10 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
       const 响应 = await fetch(`/api/copies/${条.id}/favorite`, {
         method: "POST",
       });
-      if (!响应.ok) throw new Error("操作失败");
+      if (!响应.ok) throw new Error("Action failed");
       路由.refresh();
     } catch (错误) {
-      alert(错误 instanceof Error ? 错误.message : "网络异常");
+      alert(错误 instanceof Error ? 错误.message : "Network error");
     } finally {
       设置收藏中(false);
     }
@@ -91,7 +91,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
 
   // 删除按钮：二次确认（防误删）→ 调 DELETE → router.refresh()
   async function 删除() {
-    const 确认 = window.confirm("确定删除这条文案？删除后无法恢复。");
+    const 确认 = window.confirm("Delete this copy? This cannot be undone.");
     if (!确认) return;
 
     设置删除中(true);
@@ -101,11 +101,11 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
       });
       if (!响应.ok) {
         const 数据 = await 响应.json().catch(() => ({}));
-        throw new Error(数据.error || "删除失败");
+        throw new Error(数据.error || "Delete failed");
       }
       路由.refresh();
     } catch (错误) {
-      alert(错误 instanceof Error ? 错误.message : "网络异常");
+      alert(错误 instanceof Error ? 错误.message : "Network error");
     } finally {
       设置删除中(false);
     }
@@ -127,7 +127,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
   async function 保存编辑() {
     const 修剪后 = 编辑内容.trim();
     if (修剪后.length === 0) {
-      alert("文案内容不能为空");
+      alert("Copy cannot be empty");
       return;
     }
     if (修剪后 === 条.content.trim()) {
@@ -145,12 +145,12 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
       });
       if (!响应.ok) {
         const 数据 = await 响应.json().catch(() => ({}));
-        throw new Error(数据.error || "保存失败");
+        throw new Error(数据.error || "Save failed");
       }
       路由.refresh();
       设置编辑中(false);
     } catch (错误) {
-      alert(错误 instanceof Error ? 错误.message : "网络异常");
+      alert(错误 instanceof Error ? 错误.message : "Network error");
     } finally {
       设置保存中(false);
     }
@@ -165,11 +165,11 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
     <article className="rounded-xl border border-black/10 p-4 transition-colors hover:border-black/30 dark:border-white/15 dark:hover:border-white/30">
       {/* 头部：时间 + 平台/风格标签 + 编辑模式提示 */}
       <div className="mb-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-        <span>{new Date(条.createdAt).toLocaleString("zh-CN")}</span>
+        <span>{new Date(条.createdAt).toLocaleString("en-US")}</span>
         <div className="flex items-center gap-2">
           {编辑中 && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-              ✏️ 编辑中
+              ✏️ Editing
             </span>
           )}
           <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
@@ -194,8 +194,8 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             className="w-full resize-y rounded-lg border border-amber-300 bg-amber-50/50 px-3 py-2 text-sm leading-6 text-black outline-none focus:border-amber-500 disabled:opacity-50 dark:border-amber-700 dark:bg-amber-950/20 dark:text-zinc-100"
           />
           <div className="mt-1 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-            <span>{字数} / 5000 字</span>
-            <span>Cmd/Ctrl + Enter 保存，Esc 取消</span>
+            <span>{字数} / 5000 chars</span>
+            <span>Cmd/Ctrl+Enter to save, Esc to cancel</span>
           </div>
         </div>
       ) : (
@@ -209,7 +209,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
               onClick={() => 设置展开(!展开)}
               className="mt-1 text-xs text-zinc-500 underline hover:text-black dark:hover:text-zinc-200"
             >
-              {展开 ? "收起" : "展开全文"}
+              {展开 ? "Show less" : "Show more"}
             </button>
           )}
         </>
@@ -224,7 +224,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             disabled={保存中}
             className="rounded-lg border border-black/15 px-3 py-1 text-xs text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            取消
+            Cancel
           </button>
           <button
             type="button"
@@ -232,7 +232,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             disabled={保存中 || 编辑内容.trim().length === 0}
             className="rounded-lg bg-amber-500 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
           >
-            {保存中 ? "保存中…" : "✓ 保存"}
+            {保存中 ? "Saving…" : "✓ Save"}
           </button>
         </div>
       ) : (
@@ -243,7 +243,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             onClick={复制}
             className="rounded-lg border border-black/15 px-3 py-1 text-xs text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            {已复制 ? "✓ 已复制" : "📋 复制"}
+            {已复制 ? "✓ Copied" : "📋 Copy"}
           </button>
 
           {/* 收藏 */}
@@ -253,7 +253,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             disabled={收藏中}
             className="rounded-lg border border-black/15 px-3 py-1 text-xs transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-white/20 dark:hover:bg-zinc-900"
           >
-            {条.isFavorite ? "❤️ 已收藏" : "🤍 收藏"}
+            {条.isFavorite ? "❤️ Saved" : "🤍 Save"}
           </button>
 
           {/* 编辑（新增） */}
@@ -262,7 +262,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             onClick={进入编辑}
             className="rounded-lg border border-amber-200 px-3 py-1 text-xs text-amber-700 transition-colors hover:bg-amber-50 dark:border-amber-900/50 dark:text-amber-400 dark:hover:bg-amber-950/30"
           >
-            ✏️ 编辑
+            ✏️ Edit
           </button>
 
           {/* 删除（红色警示，置最后） */}
@@ -272,7 +272,7 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
             disabled={删除中}
             className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
           >
-            {删除中 ? "删除中…" : "🗑️ 删除"}
+            {删除中 ? "Deleting…" : "🗑️ Delete"}
           </button>
         </div>
       )}

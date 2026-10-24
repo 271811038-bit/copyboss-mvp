@@ -21,7 +21,7 @@ export async function POST(请求: Request) {
   // ① 验明正身：auth() 会读 cookie 里的 session，确认你是谁
   const 会话 = await auth();
   if (!会话?.user?.id) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "Please log in first" }, { status: 401 });
   }
 
   // ② 额度闸：免费版 1 次/天，Pro 10 次/天（防薅羊毛，保护 DeepSeek API 成本）
@@ -32,8 +32,8 @@ export async function POST(请求: Request) {
       {
         error:
           额度.plan === "PRO"
-            ? `今日 ${额度.总数} 次会员额度已用完，加油包也用完了，明天 0 点重置（或再买加油包 $1/10 次）`
-            : `今日免费额度（${额度.总数} 次）已用完，明天 0 点自动重置；升级 Pro 每天 10 次`,
+            ? `Your daily ${额度.总数} Pro generations and top-up credits are used up. Resets at midnight UTC (or buy another top-up pack: $1 / 10 generations)`
+            : `Your daily free quota (${额度.总数} generation) is used up. Resets at midnight UTC — upgrade to Pro for 10 generations/day.`,
         错误们: ["额度已用完"],
         已用: 额度.已用,
         剩余: 0,
@@ -55,7 +55,7 @@ export async function POST(请求: Request) {
     产品.trim().length < 5
   ) {
     return NextResponse.json(
-      { error: "参数不完整：至少选 1 个平台、1 个风格，产品描述至少 5 个字" },
+      { error: "Missing parameters: pick at least 1 platform and 1 tone, product description at least 5 characters" },
       { status: 400 }
     );
   }
@@ -70,7 +70,7 @@ export async function POST(请求: Request) {
       const 结果 = await 生成文案({ 产品: 产品.trim(), 平台, 风格, 数量: 每组条数 });
 
       if (!结果.ok) {
-        错误们.push(`${平台}×${风格}：${结果.原因}`);
+        错误们.push(`${平台}×${风格}: ${结果.原因}`);
         continue; // 一组失败不影响其他组，能出多少出多少
       }
 

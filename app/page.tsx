@@ -4,40 +4,40 @@ import Link from "next/link";
 
 const 功能点 = [
   {
-    标题: "三平台一键适配",
-    描述: "同一个主题，自动生成小红书种草体、公众号深度体、抖音短句体，不用再为不同平台重新组织语言。",
+    标题: "One topic, every platform",
+    描述: "Write about your product once — get platform-native captions for Instagram, TikTok, LinkedIn, X and YouTube. No more rewriting for each channel.",
     图标: "🎯",
   },
   {
-    标题: "多种风格任选",
-    描述: "种草风、干货风、故事风、促销风……按内容场景切换语气，告别千篇一律的 AI 味。",
+    标题: "Four tones to match your brand",
+    描述: "Friendly, Professional, Witty or Story-driven — switch the voice to fit the moment instead of sounding like every other AI post.",
     图标: "✍️",
   },
   {
-    标题: "秒级出稿",
-    描述: "输入主题和关键词，约 30 秒拿到可直接发布的初稿，再微调即可发布。",
+    标题: "Publish-ready in seconds",
+    描述: "Hit generate and get your first draft in about 30 seconds — ready to post or fine-tune. Stop staring at a blank text box.",
     图标: "⚡",
   },
 ];
 
 const 使用步骤 = [
-  { 步骤: "1", 标题: "输入主题", 描述: "写下你的产品、活动或选题，附上想突出的关键词。" },
-  { 步骤: "2", 标题: "选择平台与风格", 描述: "小红书 / 公众号 / 抖音，配上喜欢的文风。" },
-  { 步骤: "3", 标题: "生成并微调", 描述: "30 秒拿到三段文案，不满意可重新生成，满意即发布。" },
+  { 步骤: "1", 标题: "Describe your product", 描述: "Tell the AI what you sell, who it's for, and what makes it special." },
+  { 步骤: "2", 标题: "Pick platforms & tone", 描述: "Instagram / TikTok / LinkedIn / X / YouTube, with the voice you want." },
+  { 步骤: "3", 标题: "Generate & post", 描述: "Get your copy in 30 seconds. Not perfect? Regenerate. Good? Publish." },
 ];
 
 const 常见问题 = [
   {
-    问: "生成的内容可以直接发布吗？",
-    答: "建议把 AI 初稿当作「质量不错的草稿」——发布前花一两分钟检查事实与表达，效果最好。AI 生成内容可能存在不准确之处。",
+    问: "Can I publish the output directly?",
+    答: "Treat the AI draft as a strong first draft — a quick one-minute fact-check and tone pass before publishing gets the best results. AI-generated content may contain inaccuracies.",
   },
   {
-    问: "免费版和 Pro 有什么区别？",
-    答: "免费版每天 1 次生成额度；Pro（$2.99/月）每天 10 次，当日不够用还可买加油包（$1 / 10 次）。适合需要持续产出的商家与博主，可随时取消。",
+    问: "What's the difference between Free and Pro?",
+    答: "Free gives you 1 generation per day. Pro ($9.99/mo) gives you 10 per day, plus a $1 top-up pack (10 extra generations) when you need more. Cancel anytime.",
   },
   {
-    问: "我的输入内容会被公开吗？",
-    答: "不会。你的输入与生成记录仅自己可见，详情见我们的隐私政策。",
+    问: "Is my input public?",
+    答: "No. Your prompts and generated copy are visible only to you. See our privacy policy for details.",
   },
 ];
 
@@ -51,29 +51,29 @@ export default function Home() {
             ✨ CopyBoss
           </span>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50">
-            一个可靠的
-            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text text-transparent"> AI 文案优化师</span>
+            Your AI copywriter for
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text text-transparent"> every platform</span>
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            30 秒，为同一个主题生成小红书、公众号、抖音三个平台、多种风格的营销文案。
+            Describe your product once. Get ready-to-publish copy for Instagram, TikTok, LinkedIn, X and YouTube in 30 seconds.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">小红书</span>
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-blue-600 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">公众号</span>
-            <span className="rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-orange-600 dark:border-orange-900/50 dark:bg-orange-950/40 dark:text-orange-300">抖音文案</span>
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">Instagram</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-blue-600 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">LinkedIn</span>
+            <span className="rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-orange-600 dark:border-orange-900/50 dark:bg-orange-950/40 dark:text-orange-300">TikTok</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link
               className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-8 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30"
               href="/generate"
             >
-              免费开始（每天 1 次）
+              Start free (1 generation/day)
             </Link>
             <Link
               className="flex h-12 items-center justify-center rounded-full border border-black/20 px-8 text-base font-medium text-black transition-colors hover:bg-zinc-100 dark:border-white/25 dark:text-zinc-50 dark:hover:bg-zinc-900"
               href="/pricing"
             >
-              查看 Pro 会员 👑
+              See Pro 👑
             </Link>
           </div>
         </section>
@@ -95,7 +95,7 @@ export default function Home() {
         {/* 使用步骤 */}
         <section className="py-12">
           <h2 className="text-center text-2xl font-semibold text-black dark:text-zinc-50">
-            三步出稿，就这么简单
+            Three steps. That's it.
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {使用步骤.map((s) => (
@@ -112,16 +112,15 @@ export default function Home() {
 
         {/* 适合谁 */}
         <section className="py-12 text-center">
-          <h2 className="text-2xl font-semibold text-black dark:text-zinc-50">适合谁用？</h2>
+          <h2 className="text-2xl font-semibold text-black dark:text-zinc-50">Who is it for?</h2>
           <p className="mx-auto mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400 leading-7">
-            需要持续产出内容却挤不出时间的<strong>小商家</strong>、想稳定更新的<strong>博主与个体创作者</strong>、
-            以及帮客户写方案的<strong>自媒体运营者</strong>。你负责选题和把关，重复劳动交给 CopyBoss。
+            <strong>Small business owners</strong> who need content but have no time, <strong>creators &amp; bloggers</strong> who want to post consistently, and <strong>freelance marketers</strong> writing for clients. You bring the ideas — CopyBoss does the typing.
           </p>
         </section>
 
         {/* 常见问题 */}
         <section className="py-12">
-          <h2 className="text-center text-2xl font-semibold text-black dark:text-zinc-50">常见问题</h2>
+          <h2 className="text-center text-2xl font-semibold text-black dark:text-zinc-50">FAQ</h2>
           <div className="mx-auto mt-8 flex max-w-2xl flex-col gap-4">
             {常见问题.map((q) => (
               <div
@@ -138,16 +137,16 @@ export default function Home() {
         {/* 底部 CTA */}
         <section className="flex flex-col items-center gap-4 py-16 text-center">
           <h2 className="text-2xl font-semibold text-black dark:text-zinc-50">
-            现在就生成第一条文案
+            Generate your first copy now
           </h2>
           <Link
             className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-10 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30"
             href="/generate"
           >
-            免费开始
+            Start free
           </Link>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
-            有问题？联系客服 271811038@qq.com
+            Questions? Reach us at 271811038@qq.com
           </p>
         </section>
       </main>

@@ -16,13 +16,13 @@ export const dynamic = "force-dynamic";
 
 // 免费版 / Pro 版的功能对比（单一数据源，改价只改这里）
 const 对比项 = [
-  { 功能: "每日生成次数", 免费: "1 次", Pro: "10 次" },
-  { 功能: "当日额度加油包", 免费: "—", Pro: "$1 / 10 次，即买即用" },
-  { 功能: "支持平台", 免费: "小红书 / 公众号 / 抖音", Pro: "小红书 / 公众号 / 抖音" },
-  { 功能: "文案风格", 免费: "4 种全开放", Pro: "4 种全开放" },
-  { 功能: "历史记录保存", 免费: "✅", Pro: "✅" },
-  { 功能: "收藏 / 复制 / 编辑", 免费: "✅", Pro: "✅" },
-  { 功能: "新功能优先体验", 免费: "—", Pro: "✅" },
+  { 功能: "Daily generations", 免费: "1", Pro: "10" },
+  { 功能: "Top-up pack", 免费: "—", Pro: "$1 / 10 generations, instant" },
+  { 功能: "Platforms", 免费: "Instagram / TikTok / LinkedIn / X / YouTube", Pro: "Instagram / TikTok / LinkedIn / X / YouTube" },
+  { 功能: "Tones", 免费: "All 4", Pro: "All 4" },
+  { 功能: "History", 免费: "✅", Pro: "✅" },
+  { 功能: "Copy / edit / save", 免费: "✅", Pro: "✅" },
+  { 功能: "Early access to new features", 免费: "—", Pro: "✅" },
 ];
 
 export default async function PricingPage() {
@@ -46,14 +46,14 @@ export default async function PricingPage() {
       {/* 标题 */}
       <div className="mb-8 flex flex-col gap-2 text-center">
         <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          选择你的方案
+          Choose your plan
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          免费用着顺手再升级，随时可取消。
+          Start free, upgrade when it pays for itself. Cancel anytime.
         </p>
         {plan === "PRO" && (
           <p className="mx-auto mt-2 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
-            👑 你已是 Pro 会员
+            👑 You're a Pro member
           </p>
         )}
       </div>
@@ -62,30 +62,30 @@ export default async function PricingPage() {
       <div className="mb-10 grid gap-5 sm:grid-cols-2">
         {/* 免费版 */}
         <div className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
-          <h2 className="text-lg font-semibold text-black dark:text-zinc-100">免费版</h2>
+          <h2 className="text-lg font-semibold text-black dark:text-zinc-100">Free</h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            适合偶尔发帖的老板
+            For trying things out
           </p>
           <p className="mt-4 text-4xl font-bold text-black dark:text-zinc-50">
-            ¥0
-            <span className="text-base font-normal text-zinc-400"> /月</span>
+            $0
+            <span className="text-base font-normal text-zinc-400"> /mo</span>
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🎁 每天 1 次生成</li>
-            <li>📱 全平台全风格</li>
-            <li>📚 历史记录永久保存</li>
+            <li>🎁 1 generation per day</li>
+            <li>📱 All platforms &amp; tones</li>
+            <li>📚 History saved forever</li>
           </ul>
           <div className="mt-6">
             {plan === "FREE" && 会话?.user ? (
               <span className="block w-full rounded-full border border-black/15 py-2.5 text-center text-sm font-medium text-zinc-500 dark:border-white/20 dark:text-zinc-400">
-                当前方案
+                Current plan
               </span>
             ) : (
               <Link
                 href={会话?.user ? "/generate" : "/register"}
                 className="block w-full rounded-full border border-black/20 py-2.5 text-center text-sm font-medium text-black transition-colors hover:bg-black hover:text-white dark:border-white/25 dark:text-zinc-100 dark:hover:bg-white dark:hover:text-black"
               >
-                {会话?.user ? "去生成文案" : "免费注册"}
+                {会话?.user ? "Start generating" : "Sign up free"}
               </Link>
             )}
           </div>
@@ -94,44 +94,44 @@ export default async function PricingPage() {
         {/* Pro 版（高亮） */}
         <div className="relative rounded-2xl border-2 border-violet-500/60 bg-gradient-to-b from-violet-50/60 to-white p-6 dark:border-violet-500/50 dark:from-violet-950/30 dark:bg-zinc-900">
           <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-            最受欢迎
+            Most popular
           </span>
           <h2 className="text-lg font-semibold text-black dark:text-zinc-100">
-            Pro 会员 👑
+            Pro 👑
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            适合天天要发内容的生意人
+            For creators posting every day
           </p>
           <p className="mt-4 text-4xl font-bold text-black dark:text-zinc-50">
-            $2.99
-            <span className="text-base font-normal text-zinc-400"> /月</span>
+            $9.99
+            <span className="text-base font-normal text-zinc-400"> /mo</span>
           </p>
           <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-            美元计价（约合 ¥21，按实时汇率）· 支持银行卡 / PayPal / Apple Pay
+            Billed monthly · Card / Apple Pay · Cancel anytime
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🚀 每天 10 次生成（10 倍额度）</li>
-            <li>⛽ 当日不够用？加油包 $1 / 10 次，即买即用</li>
-            <li>⚡ 新功能优先体验</li>
-            <li>🔒 随时取消，次月不再扣费</li>
+            <li>🚀 10 generations per day</li>
+            <li>⛽ Need more? Top-up pack $1 / 10 generations</li>
+            <li>⚡ Early access to new features</li>
+            <li>🔒 Cancel anytime — no charge next month</li>
           </ul>
           <div className="mt-6">
             {plan === "PRO" ? (
               <div className="flex flex-col gap-2">
                 <span className="block w-full rounded-full bg-amber-100 py-2.5 text-center text-sm font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
-                  已开通 · 感谢支持
+                  Active · thanks for the support!
                 </span>
                 <a
                   href="/api/portal/creem"
                   className="block w-full rounded-full border border-black/20 py-2.5 text-center text-sm font-medium text-black transition-colors hover:bg-black hover:text-white dark:border-white/25 dark:text-zinc-100 dark:hover:bg-white dark:hover:text-black"
                 >
-                  管理订阅（取消/换卡/账单）
+                  Manage subscription (cancel / card / invoices)
                 </a>
                 <a
                   href="/api/checkout/creem?type=pack"
                   className="block w-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
                 >
-                  ⛽ 买加油包 · $1 / 10 次
+                  ⛽ Top-up · $1 / 10 generations
                 </a>
               </div>
             ) : !会话?.user ? (
@@ -139,18 +139,18 @@ export default async function PricingPage() {
                 href="/register"
                 className="block w-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
               >
-                注册后升级
+                Sign up to upgrade
               </Link>
             ) : 收银台就绪 ? (
               <a
                 href="/api/checkout/creem"
                 className="block w-full rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 py-2.5 text-center text-sm font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90"
               >
-                升级 Pro · $2.99/月
+                Upgrade Pro · $9.99/mo
               </a>
             ) : (
               <span className="block w-full cursor-not-allowed rounded-full bg-black/10 py-2.5 text-center text-sm font-medium text-zinc-500 dark:bg-white/10 dark:text-zinc-400">
-                支付通道即将上线
+                Payments coming soon
               </span>
             )}
           </div>
@@ -160,13 +160,13 @@ export default async function PricingPage() {
       {/* 详细对比表 */}
       <section className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
         <h2 className="mb-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          详细对比
+          Full comparison
         </h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-black/10 text-left text-zinc-500 dark:border-white/15 dark:text-zinc-400">
-              <th className="pb-2 font-medium">功能</th>
-              <th className="pb-2 font-medium">免费版</th>
+              <th className="pb-2 font-medium">Feature</th>
+              <th className="pb-2 font-medium">Free</th>
               <th className="pb-2 font-medium">Pro 👑</th>
             </tr>
           </thead>
@@ -188,16 +188,16 @@ export default async function PricingPage() {
       {/* 常见问题 */}
       <section className="mt-8 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
         <p>
-          <strong className="text-black dark:text-zinc-100">怎么取消？</strong>{" "}
-          登录后在本页点「管理订阅」，进入订阅门户一键取消，次月不再扣费，当月额度保留。
+          <strong className="text-black dark:text-zinc-100">How do I cancel?</strong>{" "}
+          Log in and click "Manage subscription" on this page — one click in the billing portal and you won't be charged again. Your quota stays active until the end of the billing period.
         </p>
         <p>
-          <strong className="text-black dark:text-zinc-100">支持什么支付方式？</strong>{" "}
-          银行卡 / PayPal / Apple Pay 等（由 Creem 收银台支持，自动处理税务，按地区自动展示可用方式）。
+          <strong className="text-black dark:text-zinc-100">What payment methods are supported?</strong>{" "}
+          Card / Apple Pay and more, handled securely by our payment partner (taxes included automatically per region).
         </p>
         <p>
-          <strong className="text-black dark:text-zinc-100">发票？</strong>{" "}
-          付款后可联系客服开具。
+          <strong className="text-black dark:text-zinc-100">Invoices?</strong>{" "}
+          Contact support after purchase and we'll issue one.
         </p>
       </section>
     </main>
