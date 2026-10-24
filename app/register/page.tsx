@@ -68,7 +68,7 @@ export default async function RegisterPage({
 
           <button
             type="submit"
-            className="rounded-lg bg-black dark:bg-white text-white dark:text-black px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200"
+            className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
           >
             创建账号
           </button>

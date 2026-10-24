@@ -1,7 +1,10 @@
 // 用户额度管理
-// 业务规则（2026-09-24 订阅版）：
-//   FREE 免费版：每天 5 次生成（北京时间 0 点重置）
-//   PRO 会员：  每天 30 次生成
+// 业务规则（2026-10-25 调整版）：
+//   FREE 免费版：每天 1 次生成（北京时间 0 点重置）
+//   PRO 会员：  每天 10 次生成
+//   加油包：    PRO 当日额度用尽后，可买加油包（$1 / 10 次），
+//               购买后立即到账 User.extraCredits，当日额度用尽时自动消耗，
+//               不随 0 点重置（用完为止）
 // 收藏、删除、复制、查看历史 —— 都不计次数
 //
 // 设计决策：
@@ -9,13 +12,15 @@
 //    1 次请求可能产出 5/10/30 条文案，但只算 1 次额度（符合"按一次=一次"的直觉）
 // 2. 时区用 UTC+8（北京时间），因为目标用户全在中国
 // 3. 额度上限跟着用户的 plan 走（webhook 付费成功 → plan=PRO → 自动涨额度）
+// 4. 扣费顺序：先扣当日额度，超出部分扣加油包（Generation 表只记次数，
+//    加油包次数在生成成功后由 扣加油包若超额() 原子扣减）
 
 import { prisma } from "./db";
 
 // 各档位的每日次数（改价/改额度只动这里）
 export const 每日次数表: Record<string, number> = {
-  FREE: 5,
-  PRO: 30,
+  FREE: 1,
+  PRO: 10,
 };
 
 // 免费版每日次数（保留这个导出，历史代码还在用）
@@ -59,16 +64,32 @@ export async function 今日生成次数(userId: string): Promise<number> {
   });
 }
 
-// 查询某个用户今日还剩几次（自动按他的 plan 算上限）
-export async function 剩余次数(userId: string): Promise<number> {
-  const [用户, 用了] = await Promise.all([
+// 生成成功后的扣费：当日额度已用尽时，扣 1 次加油包（原子操作，余额不足不动）
+export async function 扣加油包若超额(userId: string): Promise<void> {
+  const [用户, 已用] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { plan: true } }),
     今日生成次数(userId),
   ]);
-  return Math.max(0, 额度上限(用户?.plan) - 用了);
+  if (!用户) return;
+  if (已用 >= 额度上限(用户.plan)) {
+    await prisma.user.updateMany({
+      where: { id: userId, extraCredits: { gt: 0 } },
+      data: { extraCredits: { decrement: 1 } },
+    });
+  }
 }
 
-// 是否已超额（用于 API 路由拦截）
+// 查询某个用户今日还剩几次（当日额度 + 加油包余额）
+export async function 剩余次数(userId: string): Promise<number> {
+  const [用户, 用了] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { plan: true, extraCredits: true } }),
+    今日生成次数(userId),
+  ]);
+  const 当日剩余 = Math.max(0, 额度上限(用户?.plan) - 用了);
+  return 当日剩余 + (用户?.extraCredits ?? 0);
+}
+
+// 是否已超额（用于 API 路由拦截）：当日额度用尽 且 加油包也没有
 export async function 是否超额(userId: string): Promise<boolean> {
   const 剩余 = await 剩余次数(userId);
   return 剩余 <= 0;
@@ -81,19 +102,22 @@ export async function 查额度(userId: string): Promise<{
   剩余: number;
   总数: number;
   超额: boolean;
+  加油包剩余: number;
   下次重置: Date;
 }> {
   const [用户, 已用] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { plan: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { plan: true, extraCredits: true } }),
     今日生成次数(userId),
   ]);
   const 上限 = 额度上限(用户?.plan);
+  const 加油包剩余 = 用户?.extraCredits ?? 0;
   return {
     plan: 用户?.plan ?? "FREE",
     已用,
-    剩余: Math.max(0, 上限 - 已用),
+    剩余: Math.max(0, 上限 - 已用) + 加油包剩余,
     总数: 上限,
-    超额: 已用 >= 上限,
+    超额: 已用 >= 上限 && 加油包剩余 <= 0,
+    加油包剩余,
     下次重置: 明日零点UTC(),
   };
 }

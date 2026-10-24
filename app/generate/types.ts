@@ -9,6 +9,7 @@ export type 额度快照 = {
   剩余: number;
   总数: number;
   超额: boolean;
+  加油包剩余?: number; // 加油包（$1/10次）剩余次数，老数据可能没有该字段
 };
 
 // Server Action 返回的状态：表单提交后整页刷新（无 JS 时）也能拿到结果

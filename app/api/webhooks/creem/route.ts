@@ -109,6 +109,41 @@ export async function POST(请求: Request) {
   const 事件名: string = 事件?.eventType ?? "";
   const 对象 = 事件?.object ?? {};
 
+  // ④a 加油包订单单独处理：一次性买断（$1/10次），不发订阅事件
+  //     识别依据：metadata.type === "pack"，或商品 ID 等于加油包产品
+  const 加油包产品ID = process.env.CREEM_PACK_PRODUCT_ID;
+  const 是加油包订单 =
+    事件名 === "checkout.completed" &&
+    (对象?.metadata?.type === "pack" ||
+      (加油包产品ID && 对象?.product?.id === 加油包产品ID));
+
+  if (是加油包订单) {
+    const 加油包元数据 = 对象?.metadata ?? {};
+    const 买家ID: string | undefined = 加油包元数据?.userId;
+    const 买家邮箱: string | undefined = 对象?.customer?.email;
+
+    let 买家 = null;
+    if (买家ID) {
+      买家 = await prisma.user.findUnique({ where: { id: 买家ID } });
+    }
+    if (!买家 && 买家邮箱) {
+      买家 = await prisma.user.findUnique({ where: { email: 买家邮箱 } });
+    }
+
+    if (!买家) {
+      console.error("[Creem webhook] 加油包订单找不到用户", { 买家邮箱, 买家ID });
+      return NextResponse.json({ ok: false, 原因: "用户不存在" }, { status: 200 });
+    }
+
+    await prisma.user.update({
+      where: { id: 买家.id },
+      data: { extraCredits: { increment: 10 } },
+    });
+
+    console.log(`[Creem webhook] 加油包到账 → 用户 ${买家.email} 加油包 +10 次`);
+    return NextResponse.json({ ok: true, 加油包: "+10" });
+  }
+
   // ④ 判断这个事件该把用户设成什么套餐（null = 不关我们事）
   const 新套餐 = 事件转套餐(事件名);
   if (新套餐 === null) {

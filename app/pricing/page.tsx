@@ -16,7 +16,8 @@ export const dynamic = "force-dynamic";
 
 // 免费版 / Pro 版的功能对比（单一数据源，改价只改这里）
 const 对比项 = [
-  { 功能: "每日生成次数", 免费: "5 次", Pro: "30 次" },
+  { 功能: "每日生成次数", 免费: "1 次", Pro: "10 次" },
+  { 功能: "当日额度加油包", 免费: "—", Pro: "$1 / 10 次，即买即用" },
   { 功能: "支持平台", 免费: "小红书 / 公众号 / 抖音", Pro: "小红书 / 公众号 / 抖音" },
   { 功能: "文案风格", 免费: "4 种全开放", Pro: "4 种全开放" },
   { 功能: "历史记录保存", 免费: "✅", Pro: "✅" },
@@ -70,7 +71,7 @@ export default async function PricingPage() {
             <span className="text-base font-normal text-zinc-400"> /月</span>
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🎁 每天 5 次生成</li>
+            <li>🎁 每天 1 次生成</li>
             <li>📱 全平台全风格</li>
             <li>📚 历史记录永久保存</li>
           </ul>
@@ -91,8 +92,8 @@ export default async function PricingPage() {
         </div>
 
         {/* Pro 版（高亮） */}
-        <div className="relative rounded-2xl border-2 border-black p-6 dark:border-white dark:bg-zinc-900">
-          <span className="absolute -top-3 left-6 rounded-full bg-black px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-black">
+        <div className="relative rounded-2xl border-2 border-violet-500/60 bg-gradient-to-b from-violet-50/60 to-white p-6 dark:border-violet-500/50 dark:from-violet-950/30 dark:bg-zinc-900">
+          <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
             最受欢迎
           </span>
           <h2 className="text-lg font-semibold text-black dark:text-zinc-100">
@@ -109,7 +110,8 @@ export default async function PricingPage() {
             美元计价（约合 ¥21，按实时汇率）· 支持银行卡 / PayPal / Apple Pay
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🚀 每天 30 次生成（6 倍额度）</li>
+            <li>🚀 每天 10 次生成（10 倍额度）</li>
+            <li>⛽ 当日不够用？加油包 $1 / 10 次，即买即用</li>
             <li>⚡ 新功能优先体验</li>
             <li>🔒 随时取消，次月不再扣费</li>
           </ul>
@@ -125,18 +127,24 @@ export default async function PricingPage() {
                 >
                   管理订阅（取消/换卡/账单）
                 </a>
+                <a
+                  href="/api/checkout/creem?type=pack"
+                  className="block w-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
+                >
+                  ⛽ 买加油包 · $1 / 10 次
+                </a>
               </div>
             ) : !会话?.user ? (
               <Link
                 href="/register"
-                className="block w-full rounded-full bg-black py-2.5 text-center text-sm font-medium text-white dark:bg-white dark:text-black"
+                className="block w-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
               >
                 注册后升级
               </Link>
             ) : 收银台就绪 ? (
               <a
                 href="/api/checkout/creem"
-                className="block w-full rounded-full bg-black py-2.5 text-center text-sm font-medium text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+                className="block w-full rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 py-2.5 text-center text-sm font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90"
               >
                 升级 Pro · $2.99/月
               </a>

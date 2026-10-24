@@ -33,7 +33,7 @@ const 常见问题 = [
   },
   {
     问: "免费版和 Pro 有什么区别？",
-    答: "免费版每天 5 次生成额度；Pro（$2.99/月）每天 30 次，适合需要持续产出的商家与博主。可随时取消。",
+    答: "免费版每天 1 次生成额度；Pro（$2.99/月）每天 10 次，当日不够用还可买加油包（$1 / 10 次）。适合需要持续产出的商家与博主，可随时取消。",
   },
   {
     问: "我的输入内容会被公开吗？",
@@ -47,26 +47,27 @@ export default function Home() {
       <main className="mx-auto max-w-4xl px-6">
         {/* Hero */}
         <section className="flex flex-col items-center gap-6 py-20 text-center">
-          <span className="rounded-full bg-black px-4 py-1 text-sm font-medium text-white dark:bg-white dark:text-black">
-            CopyBoss
+          <span className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1 text-sm font-semibold text-white shadow-sm">
+            ✨ CopyBoss
           </span>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50">
-            一个可靠的 AI 文案优化师
+            一个可靠的
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text text-transparent"> AI 文案优化师</span>
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             30 秒，为同一个主题生成小红书、公众号、抖音三个平台、多种风格的营销文案。
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="rounded-full border border-black/10 px-4 py-1.5 dark:border-white/20">小红书</span>
-            <span className="rounded-full border border-black/10 px-4 py-1.5 dark:border-white/20">公众号</span>
-            <span className="rounded-full border border-black/10 px-4 py-1.5 dark:border-white/20">抖音文案</span>
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">小红书</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-blue-600 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">公众号</span>
+            <span className="rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-orange-600 dark:border-orange-900/50 dark:bg-orange-950/40 dark:text-orange-300">抖音文案</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link
-              className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-base font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-8 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30"
               href="/generate"
             >
-              免费开始（每天 5 次）
+              免费开始（每天 1 次）
             </Link>
             <Link
               className="flex h-12 items-center justify-center rounded-full border border-black/20 px-8 text-base font-medium text-black transition-colors hover:bg-zinc-100 dark:border-white/25 dark:text-zinc-50 dark:hover:bg-zinc-900"
@@ -99,7 +100,7 @@ export default function Home() {
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {使用步骤.map((s) => (
               <div key={s.步骤} className="flex flex-col items-center gap-2 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-sm font-semibold text-white dark:bg-white dark:text-black">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-sm font-semibold text-white shadow-sm">
                   {s.步骤}
                 </div>
                 <h3 className="font-medium text-black dark:text-zinc-50">{s.标题}</h3>
@@ -140,7 +141,7 @@ export default function Home() {
             现在就生成第一条文案
           </h2>
           <Link
-            className="flex h-12 items-center justify-center rounded-full bg-black px-10 text-base font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-10 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30"
             href="/generate"
           >
             免费开始

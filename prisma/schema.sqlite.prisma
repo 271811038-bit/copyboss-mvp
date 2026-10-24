@@ -30,6 +30,7 @@ model User {
   lsCustomerId         String?  // Lemon Squeezy 的 customer id
   lsSubscriptionId     String?  @unique // 订阅 id（一个订阅只对应一个用户）
   lsSubscriptionStatus String?  // active / cancelled / expired / past_due / unpaid
+  extraCredits         Int      @default(0) // 加油包剩余次数（当日额度用尽后消耗，买 10 次加 10）
 
   copies         Copy[]
   generations    Generation[]

@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { 生成文案 } from "@/lib/ai";
-import { 查额度 } from "@/lib/limits";
+import { 查额度, 扣加油包若超额 } from "@/lib/limits";
 
 // 每种「平台 × 风格」组合生成几条
 const 每组条数 = 5;
@@ -24,13 +24,16 @@ export async function POST(请求: Request) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }
 
-  // ② 额度闸：免费版 5 次/天，Pro 30 次/天（防薅羊毛，保护 DeepSeek API 成本）
+  // ② 额度闸：免费版 1 次/天，Pro 10 次/天（防薅羊毛，保护 DeepSeek API 成本）
   //    即使前端做了置灰，API 也要独立校验——前端永远不能信
   const 额度 = await 查额度(会话.user.id);
   if (额度.超额) {
     return NextResponse.json(
       {
-        error: `今日 ${额度.总数} 次额度已用完（${额度.plan === "PRO" ? "Pro 会员" : "免费版"}），明天 0 点（北京时间）自动重置`,
+        error:
+          额度.plan === "PRO"
+            ? `今日 ${额度.总数} 次会员额度已用完，加油包也用完了，明天 0 点重置（或再买加油包 $1/10 次）`
+            : `今日免费额度（${额度.总数} 次）已用完，明天 0 点自动重置；升级 Pro 每天 10 次`,
         错误们: ["额度已用完"],
         已用: 额度.已用,
         剩余: 0,
@@ -99,7 +102,8 @@ export async function POST(请求: Request) {
     });
   }
 
-  // ⑥ 生成后查一次额度（一次性返回，避免前端再查）
+  // ⑥ 当日额度用尽时扣加油包，再查一次额度（一次性返回，避免前端再查）
+  await 扣加油包若超额(会话.user.id);
   const 新额度 = await 查额度(会话.user.id);
 
   return NextResponse.json({
@@ -111,5 +115,6 @@ export async function POST(请求: Request) {
     总数: 新额度.总数,
     超额: 新额度.超额,
     plan: 新额度.plan,
+    加油包剩余: 新额度.加油包剩余,
   });
 }

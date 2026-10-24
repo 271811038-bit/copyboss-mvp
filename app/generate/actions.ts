@@ -13,7 +13,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { 生成文案 } from "@/lib/ai";
-import { 查额度 } from "@/lib/limits";
+import { 查额度, 扣加油包若超额 } from "@/lib/limits";
 import type { 生成结果状态 } from "./types";
 
 // 每种「平台 × 风格」组合生成几条（与 API 版一致）
@@ -58,9 +58,10 @@ export async function 生成文案Action(
   const 额度检查 = await 查额度(会话.user.id);
   if (额度检查.超额) {
     return {
-      error: `今日 ${额度检查.总数} 次额度已用完（${
-        额度检查.plan === "PRO" ? "Pro 会员" : "免费版"
-      }），明天 0 点（北京时间）自动重置`,
+      error:
+        额度检查.plan === "PRO"
+          ? `今日 ${额度检查.总数} 次会员额度已用完，加油包也用完了。明天 0 点（北京时间）重置，或再买一个加油包（$1 / 10 次）`
+          : `今日免费额度（${额度检查.总数} 次）已用完，明天 0 点（北京时间）自动重置；升级 Pro 每天 10 次`,
       文案们: [],
       错误们: [],
       额度: {
@@ -69,6 +70,7 @@ export async function 生成文案Action(
         剩余: 0,
         总数: 额度检查.总数,
         超额: true,
+        加油包剩余: 额度检查.加油包剩余,
       },
     };
   }
@@ -116,7 +118,8 @@ export async function 生成文案Action(
     });
   }
 
-  // ⑦ 生成后查一次最新额度一并返回
+  // ⑦ 当日额度用尽时扣加油包（买过加油包的场景），再查一次最新额度一并返回
+  await 扣加油包若超额(会话.user.id);
   const 新额度 = await 查额度(会话.user.id);
 
   return {
@@ -132,6 +135,7 @@ export async function 生成文案Action(
       剩余: 新额度.剩余,
       总数: 新额度.总数,
       超额: 新额度.超额,
+      加油包剩余: 新额度.加油包剩余,
     },
   };
 }

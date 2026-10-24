@@ -23,7 +23,7 @@ export default function Nav() {
   return (
     <nav className="w-full border-b border-black/10 dark:border-white/15 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
       <div className="mx-auto max-w-4xl flex items-center justify-between px-6 py-4">
-        <Link href="/" className="font-semibold text-lg">
+        <Link href="/" className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-lg font-bold text-transparent">
           CopyBoss
         </Link>
 

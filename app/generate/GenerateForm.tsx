@@ -33,7 +33,7 @@ function 提交按钮({ 超额 }: { 超额: boolean }) {
     <button
       type="submit"
       disabled={pending || 超额}
-      className="mb-10 flex h-12 w-full items-center justify-center rounded-full bg-black text-base font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300 dark:bg-white dark:text-black dark:hover:bg-zinc-200 dark:disabled:bg-zinc-700"
+      className="mb-10 flex h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
     >
       {pending ? "AI 正在写…（约 10-30 秒，请勿离开）" : "生成文案"}
     </button>
@@ -123,9 +123,14 @@ export default function GenerateForm({
               {额度.已用} / {额度.总数}
             </strong>
             ，剩余 <strong>{额度.剩余}</strong> 次
+            {额度.plan === "PRO" && (额度.加油包剩余 ?? 0) > 0 && (
+              <span className="ml-1 text-violet-600 dark:text-violet-400">
+                （含加油包 {额度.加油包剩余} 次）
+              </span>
+            )}
           </span>
           {额度.plan === "PRO" && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
+            <span className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-xs font-medium text-white">
               Pro 会员
             </span>
           )}
@@ -141,9 +146,9 @@ export default function GenerateForm({
         {额度.plan !== "PRO" && (
           <Link
             href="/pricing"
-            className="ml-3 shrink-0 rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+            className="ml-3 shrink-0 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-opacity hover:opacity-85"
           >
-            升级 Pro · 30 次/天
+            升级 Pro · 10 次/天
           </Link>
         )}
       </section>
@@ -161,7 +166,7 @@ export default function GenerateForm({
             maxLength={500}
             required
             minLength={5}
-            placeholder="例如：CopyBoss 是一个帮中小老板写营销文案的 AI 工具，输入产品信息就能一键生成小红书、公众号、抖音的文案，每天免费 5 次。"
+            placeholder="例如：CopyBoss 是一个帮中小老板写营销文案的 AI 工具，输入产品信息就能一键生成小红书、公众号、抖音的文案，注册就能免费试用。"
             className="w-full resize-none rounded-lg border border-black/15 bg-transparent px-4 py-2.5 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-black/40 dark:border-white/20 dark:text-zinc-100 dark:focus:border-white/40"
           />
           <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
@@ -190,7 +195,7 @@ export default function GenerateForm({
                   value={名称}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-black peer-checked:bg-black peer-checked:text-white dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-white dark:peer-checked:bg-white dark:peer-checked:text-black">
+                <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-transparent peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-fuchsia-500 peer-checked:text-white peer-checked:shadow-sm dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-transparent dark:peer-checked:from-violet-500 dark:peer-checked:to-fuchsia-500 dark:peer-checked:text-white">
                   {名称}
                 </span>
               </label>
@@ -212,7 +217,7 @@ export default function GenerateForm({
                   value={名称}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-black peer-checked:bg-black peer-checked:text-white dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-white dark:peer-checked:bg-white dark:peer-checked:text-black">
+                <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-transparent peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-fuchsia-500 peer-checked:text-white peer-checked:shadow-sm dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-transparent dark:peer-checked:from-violet-500 dark:peer-checked:to-fuchsia-500 dark:peer-checked:text-white">
                   {名称}
                 </span>
               </label>
@@ -249,15 +254,35 @@ export default function GenerateForm({
         {状态.文案们.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/15 text-sm text-zinc-400 dark:border-white/20 dark:text-zinc-500">
             {额度.超额 ? (
-              <>
-                <span>今日额度已用完，明天 0 点重置。</span>
-                <a
-                  href="/pricing"
-                  className="rounded-full bg-black px-4 py-1.5 text-xs font-medium text-white transition hover:opacity-80 dark:bg-white dark:text-black"
-                >
-                  升级 Pro · 每天 30 次 →
-                </a>
-              </>
+              额度.plan === "PRO" ? (
+                <>
+                  <span>今日会员额度和加油包都已用完，明天 0 点重置。</span>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="/api/checkout/creem?type=pack"
+                      className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
+                    >
+                      加油包 · $1 / 10 次 →
+                    </a>
+                    <a
+                      href="/pricing"
+                      className="rounded-full border border-black/15 px-4 py-1.5 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      管理订阅
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span>今日免费额度（1 次）已用完，明天 0 点重置。</span>
+                  <a
+                    href="/pricing"
+                    className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
+                  >
+                    升级 Pro · 每天 10 次 →
+                  </a>
+                </>
+              )
             ) : (
               "还没有内容。填好产品说明、选好平台风格、点上面的按钮，候选文案会出现在这里。"
             )}
