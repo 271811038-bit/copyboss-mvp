@@ -45,7 +45,7 @@ https://mtboss.cn
 
 **Description（简介，展示在帖子里，260 字符左右）**
 ```
-CopyBoss turns your product info into ready-to-post copy for Instagram, TikTok, LinkedIn, X and YouTube. Pick a platform and a tone, get 10 distinct posts in seconds — each written for how that platform actually works. Free to try, no credit card.
+CopyBoss turns your product info into ready-to-post copy for Instagram, TikTok, LinkedIn, X and YouTube. Pick a platform and a tone, get 3 distinct posts in seconds — written for how each platform actually works. Brand voice memory & 7 output languages. Free to try.
 ```
 
 ---
@@ -66,7 +66,9 @@ So CopyBoss is platform-aware instead of platform-agnostic:
 → Pick a tone (Friendly / Professional / Witty / Story)
 → Get 10 distinct posts written for how each platform actually works — hooks for TikTok, structured takes for LinkedIn, etc.
 
-Everything is editable and copy-paste ready. Your history is saved so you can come back to drafts.
+Everything is editable and copy-paste ready — one click to copy all, or export as a .txt file. Your history is saved so you can come back to drafts.
+
+Fresh in time for launch: 🎙 Brand Voice — save your product info and tone preferences once, and every generation automatically sounds like you. Plus output in 7 languages (English, Spanish, Portuguese, German, French, Japanese) and platform-tuned hashtags built in.
 
 Pricing: 1 credit = 1 platform × 1 tone (3 copies). Free gives you 1 credit/day, Pro is $9.99/mo (10 credits/day = 30 copies) or $99/yr (15 credits/day = 45 copies). No credit card needed to test it.
 
