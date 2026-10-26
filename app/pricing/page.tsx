@@ -252,29 +252,45 @@ export default async function PricingPage() {
       )}
 
       {/* 详细对比表 */}
-      <section className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
-        <h2 className="mb-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+      <section className="relative overflow-hidden rounded-2xl border border-violet-200/70 bg-gradient-to-br from-violet-50/60 via-white to-orange-50/50 p-6 dark:border-violet-500/20 dark:from-violet-950/30 dark:via-zinc-900 dark:to-orange-950/20">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-orange-400" />
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+          <span className="inline-block h-4 w-1 rounded-full bg-gradient-to-b from-violet-500 to-orange-400" />
           Full comparison
         </h2>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-black/10 text-left text-zinc-500 dark:border-white/15 dark:text-zinc-400">
-              <th className="pb-2 font-medium">Feature</th>
-              <th className="pb-2 font-medium">Free</th>
-              <th className="pb-2 font-medium">Pro</th>
-              <th className="pb-2 font-medium">Pro Yearly 👑</th>
+            <tr className="border-b border-black/10 text-left dark:border-white/15">
+              <th className="pb-3 font-medium text-zinc-500 dark:text-zinc-400">Feature</th>
+              <th className="pb-3 font-medium">
+                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  Free
+                </span>
+              </th>
+              <th className="pb-3 font-medium">
+                <span className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                  Pro
+                </span>
+              </th>
+              <th className="pb-3 font-medium">
+                <span className="rounded-full bg-gradient-to-r from-orange-400 to-amber-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                  Pro Yearly 👑
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {对比项.map((行) => (
               <tr
                 key={行.功能}
-                className="border-b border-black/5 last:border-0 dark:border-white/5"
+                className="border-b border-black/5 transition-colors last:border-0 hover:bg-violet-50/50 dark:border-white/5 dark:hover:bg-violet-500/5"
               >
                 <td className="py-2.5 text-zinc-700 dark:text-zinc-300">{行.功能}</td>
                 <td className="py-2.5 text-zinc-500 dark:text-zinc-400">{行.免费}</td>
-                <td className="py-2.5 text-zinc-500 dark:text-zinc-400">{行.月付}</td>
-                <td className="py-2.5 font-medium text-black dark:text-zinc-100">{行.包年}</td>
+                <td className="py-2.5 font-medium text-violet-700 dark:text-violet-300">{行.月付}</td>
+                <td className="bg-gradient-to-r from-orange-50/70 to-amber-50/40 py-2.5 font-semibold text-orange-700 first:rounded-l-lg last:rounded-r-lg dark:from-orange-500/10 dark:to-amber-500/5 dark:text-orange-300">
+                  {行.包年}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -284,15 +300,15 @@ export default async function PricingPage() {
       {/* 常见问题 */}
       <section className="mt-8 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
         <p>
-          <strong className="text-black dark:text-zinc-100">How do I cancel?</strong>{" "}
+          <strong className="text-violet-700 dark:text-violet-300">How do I cancel?</strong>{" "}
           Log in and click "Manage subscription" — one click in the billing portal and you won't be charged again. Your benefits stay active until the end of the paid period.
         </p>
         <p>
-          <strong className="text-black dark:text-zinc-100">Do top-up credits expire?</strong>{" "}
+          <strong className="text-fuchsia-700 dark:text-fuchsia-300">Do top-up credits expire?</strong>{" "}
           No. Top-up credits stay in your account and are consumed automatically only when your daily quota runs out.
         </p>
         <p>
-          <strong className="text-black dark:text-zinc-100">Can I switch between monthly and yearly?</strong>{" "}
+          <strong className="text-orange-600 dark:text-orange-300">Can I switch between monthly and yearly?</strong>{" "}
           Yes — upgrade from monthly to yearly anytime from this page. Contact support for downgrades.
         </p>
       </section>
