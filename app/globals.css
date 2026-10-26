@@ -36,3 +36,67 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* ============================================================
+   视觉升级（2026-10-26）：品牌视觉工具类
+   ============================================================ */
+
+/* 极光页面背景：顶部两团柔光（品牌紫红 + 橙），提升首屏氛围 */
+.page-aurora {
+  position: relative;
+  overflow: hidden;
+}
+.page-aurora::before,
+.page-aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.page-aurora::before {
+  top: -160px;
+  left: -120px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.18), transparent 70%);
+}
+.page-aurora::after {
+  top: -120px;
+  right: -140px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.16), transparent 70%);
+}
+@media (prefers-color-scheme: dark) {
+  .page-aurora::before {
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.22), transparent 70%);
+  }
+  .page-aurora::after {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.18), transparent 70%);
+  }
+}
+/* 极光层在内容之下 */
+.page-aurora > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 品牌渐变文字 */
+.brand-text {
+  background: linear-gradient(90deg, #7c3aed, #d946ef, #f97316);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 功能卡悬浮：轻抬升 + 品牌描边 */
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgba(217, 70, 239, 0.45);
+  box-shadow: 0 12px 32px -12px rgba(217, 70, 239, 0.25);
+}

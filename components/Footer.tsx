@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="w-full border-t border-black/10 dark:border-white/15 bg-white dark:bg-black">
+      <div className="h-0.5 w-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 opacity-60" />
       <div className="mx-auto max-w-4xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-500 dark:text-zinc-400">
         <div>© {new Date().getFullYear()} CopyBoss · Your AI copywriter</div>
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">

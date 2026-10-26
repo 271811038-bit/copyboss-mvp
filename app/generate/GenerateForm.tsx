@@ -261,7 +261,8 @@ export default function GenerateForm({
       <form action={表单动作}>
         {/* ① 产品描述 */}
         <section className="mb-5 rounded-xl border border-black/10 p-5 dark:border-white/15">
-          <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="h-3.5 w-1 rounded-full bg-gradient-to-b from-violet-600 to-fuchsia-500" />
             ① What's your product? (brief for the AI)
           </h2>
           <textarea
@@ -289,7 +290,8 @@ export default function GenerateForm({
 
         {/* ② 选平台 —— 原生 checkbox，选中态由浏览器自己维护（零 JS） */}
         <section className="mb-5 rounded-xl border border-black/10 p-5 dark:border-white/15">
-          <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="h-3.5 w-1 rounded-full bg-gradient-to-b from-fuchsia-500 to-pink-500" />
             ② Pick platforms (multi-select, click a pill to toggle)
           </h2>
           <p className="mb-3 rounded-lg bg-violet-50 px-3 py-2 text-xs leading-5 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
@@ -316,7 +318,8 @@ export default function GenerateForm({
 
         {/* ③ 选风格 —— 同上，原生 checkbox */}
         <section className="mb-8 rounded-xl border border-black/10 p-5 dark:border-white/15">
-          <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="h-3.5 w-1 rounded-full bg-gradient-to-b from-orange-400 to-amber-400" />
             ③ Pick tone (multi-select)
           </h2>
           <div className="flex flex-wrap gap-3">

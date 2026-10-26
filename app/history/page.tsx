@@ -10,42 +10,54 @@ import CopyCard from "@/components/CopyCard";
 // 缓存配置：每次请求都跑（数据库内容随时在变，不要缓存）
 export const dynamic = "force-dynamic";
 
-// 这两段不能放到组件外（需要 JSX）：保持组件内
-function TabLink({ href, 选中, children }: { href: string; 选中: boolean; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className={
-        选中
-          ? "rounded-full bg-black px-4 py-1.5 text-xs text-white dark:bg-white dark:text-black"
-          : "rounded-full border border-black/15 px-4 py-1.5 text-xs text-zinc-600 transition-colors hover:border-black/40 dark:border-white/20 dark:text-zinc-400 dark:hover:border-white/40"
-      }
-    >
-      {children}
-    </Link>
-  );
-}
+// 出海后支持的 5 个平台（历史里的"小红书"等旧数据不参与统计与展示）
+const 支持平台 = ["Instagram", "TikTok", "LinkedIn", "X", "YouTube"];
+const 平台过滤 = { platform: { in: 支持平台 } };
 
-// 仪表板单卡片（emoji + 数字 + 标签）
+// 各平台的品牌配色徽章
+const 平台徽章: Record<string, string> = {
+  Instagram: "border-pink-200 bg-pink-50 text-pink-600 dark:border-pink-900/60 dark:bg-pink-950/40 dark:text-pink-300",
+  TikTok: "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900/60 dark:bg-cyan-950/40 dark:text-cyan-300",
+  LinkedIn: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300",
+  X: "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  YouTube: "border-red-200 bg-red-50 text-red-600 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300",
+};
+const 风格徽章 =
+  "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-300";
+
+// 这两段不能放到组件外（需要 JSX）：保持组件内
+// （原 TabLink 已内联进页面主体，渐变选中态更醒目）
+
+// 仪表板单卡片（emoji + 数字 + 标签，每张卡一个品牌色）
 function StatCard({
   emoji,
   label,
   value,
   sub,
   highlight,
+  tint,
 }: {
   emoji: string;
   label: string;
   value: string | number;
   sub?: string;
   highlight?: boolean;
+  tint?: "violet" | "blue" | "pink" | "amber";
 }) {
+  const 色板 = {
+    violet: "border-violet-200 bg-violet-50/70 dark:border-violet-900 dark:bg-violet-950/40",
+    blue: "border-blue-200 bg-blue-50/70 dark:border-blue-900 dark:bg-blue-950/40",
+    pink: "border-pink-200 bg-pink-50/70 dark:border-pink-900 dark:bg-pink-950/40",
+    amber: "border-amber-200 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/40",
+  };
   return (
     <div
-      className={`rounded-xl border p-4 ${
+      className={`rounded-xl border p-4 transition-transform hover:-translate-y-0.5 ${
         highlight
-          ? "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950"
-          : "border-black/10 bg-white dark:border-white/15 dark:bg-zinc-900"
+          ? "border-orange-300 bg-orange-50 dark:border-orange-900 dark:bg-orange-950"
+          : tint
+            ? 色板[tint]
+            : "border-black/10 bg-white dark:border-white/15 dark:bg-zinc-900"
       }`}
     >
       <div className="mb-1 text-xl">{emoji}</div>
@@ -107,10 +119,11 @@ export default async function HistoryPage({
   const { filter } = await searchParams;
   const 仅收藏 = filter === "fav";
 
-  // 读数据库：根据筛选条件决定是否加 isFavorite:true
+  // 读数据库：根据筛选条件决定是否加 isFavorite:true（只看出海后支持的 5 个平台）
   const 历史 = await prisma.copy.findMany({
     where: {
       userId: 用户ID,
+      ...平台过滤,
       ...(仅收藏 ? { isFavorite: true } : {}),
     },
     orderBy: { createdAt: "desc" },
@@ -118,16 +131,16 @@ export default async function HistoryPage({
   });
 
   // === 仪表板统计（4 项）===
-  // ① 总文案数（不限筛选，全局）
-  const 总数 = await prisma.copy.count({ where: { userId: 用户ID } });
+  // ① 总文案数（不限筛选，全局，仅支持的平台）
+  const 总数 = await prisma.copy.count({ where: { userId: 用户ID, ...平台过滤 } });
   // ② 已收藏数（全局）
-  const 收藏数 = await prisma.copy.count({ where: { userId: 用户ID, isFavorite: true } });
+  const 收藏数 = await prisma.copy.count({ where: { userId: 用户ID, ...平台过滤, isFavorite: true } });
   // ③ 今日额度（复用 lib/limits.ts，自动按用户 plan 算上限）
   const 额度 = await 查额度(用户ID);
   // ④ 最爱平台：按 platform 分组计数，取最多那条
   const 平台分组 = await prisma.copy.groupBy({
     by: ["platform"],
-    where: { userId: 用户ID },
+    where: { userId: 用户ID, ...平台过滤 },
     _count: { _all: true },
     orderBy: { _count: { platform: "desc" } },
     take: 1,
@@ -143,7 +156,10 @@ export default async function HistoryPage({
       {/* 标题 */}
       <div className="mb-6 flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Your Copy
+          Your{" "}
+          <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text text-transparent">
+            Copy
+          </span>
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
           Everything you generate is saved to your account — it never gets lost.
@@ -153,9 +169,9 @@ export default async function HistoryPage({
         </p>
       </div>
 
-      {/* 仪表板（4 项统计卡片） */}
+      {/* 仪表板（4 项统计卡片，各配一个品牌色） */}
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard emoji="📝" label="Total copies" value={总数} />
+        <StatCard emoji="📝" label="Total copies" value={总数} tint="violet" />
         <StatCard
           emoji="🎁"
           label="Today's quota"
@@ -166,24 +182,40 @@ export default async function HistoryPage({
               : `${额度.剩余} left` + (额度.plan === "PRO" ? " · Pro" : "")
           }
           highlight={额度.超额}
+          tint="blue"
         />
-        <StatCard emoji="❤️" label="Saved" value={收藏数} />
+        <StatCard emoji="❤️" label="Saved" value={收藏数} tint="pink" />
         <StatCard
           emoji="🏆"
           label="Top platform"
           value={最爱平台?.platform ?? "—"}
           sub={最爱平台 ? `${最爱平台._count._all} copies` : "No data yet"}
+          tint="amber"
         />
       </section>
 
       {/* 筛选 Tab */}
       <div className="mb-6 flex items-center gap-2">
-        <TabLink href="/history" 选中={!仅收藏}>
+        <Link
+          href="/history"
+          className={
+            !仅收藏
+              ? "rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
+              : "rounded-full border border-black/15 px-4 py-1.5 text-xs text-zinc-600 transition-colors hover:border-fuchsia-400 hover:text-fuchsia-600 dark:border-white/20 dark:text-zinc-400 dark:hover:border-fuchsia-500 dark:hover:text-fuchsia-300"
+          }
+        >
           All {总数}
-        </TabLink>
-        <TabLink href="/history?filter=fav" 选中={仅收藏}>
+        </Link>
+        <Link
+          href="/history?filter=fav"
+          className={
+            仅收藏
+              ? "rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
+              : "rounded-full border border-black/15 px-4 py-1.5 text-xs text-zinc-600 transition-colors hover:border-fuchsia-400 hover:text-fuchsia-600 dark:border-white/20 dark:text-zinc-400 dark:hover:border-fuchsia-500 dark:hover:text-fuchsia-300"
+          }
+        >
           ❤️ Saved {收藏数}
-        </TabLink>
+        </Link>
       </div>
 
       {/* 列表（按日期分组） */}
@@ -199,7 +231,8 @@ export default async function HistoryPage({
           {/* 今日 */}
           {分组.今日.length > 0 && (
             <section>
-              <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="h-4 w-1 rounded-full bg-gradient-to-b from-violet-600 to-fuchsia-500" />
                 <span>📅 Today</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
                   {分组.今日.length} copies
@@ -226,7 +259,8 @@ export default async function HistoryPage({
           {/* 本周 */}
           {分组.本周.length > 0 && (
             <section>
-              <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="h-4 w-1 rounded-full bg-gradient-to-b from-fuchsia-500 to-orange-400" />
                 <span>🗓️ This week</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
                   {分组.本周.length} copies
@@ -253,7 +287,8 @@ export default async function HistoryPage({
           {/* 更早 */}
           {分组.更早.length > 0 && (
             <section>
-              <h2 className="mb-3 flex items-baseline gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="h-4 w-1 rounded-full bg-gradient-to-b from-orange-400 to-amber-400" />
                 <span>📦 Earlier</span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
                   {分组.更早.length} copies

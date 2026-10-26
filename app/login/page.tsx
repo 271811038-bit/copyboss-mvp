@@ -12,9 +12,11 @@ export default async function LoginPage({
   const { error, callbackUrl } = await searchParams;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-8 bg-zinc-50 dark:bg-black">
-      <div className="w-full max-w-sm rounded-xl border border-black/10 dark:border-white/15 bg-white dark:bg-zinc-900 p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
+    <main className="page-aurora flex min-h-screen flex-col items-center justify-center px-8 bg-zinc-50 dark:bg-black">
+      <div className="w-full max-w-sm rounded-2xl border border-black/10 dark:border-white/15 bg-white dark:bg-zinc-900 p-8 shadow-xl shadow-fuchsia-500/10">
+        <h1 className="text-2xl font-semibold mb-2">
+          Welcome <span className="brand-text">back</span>
+        </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
           Log in to your CopyBoss account
         </p>
@@ -55,7 +57,7 @@ export default async function LoginPage({
 
           <button
             type="submit"
-            className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85"
+            className="rounded-lg bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/35"
           >
             Log in
           </button>

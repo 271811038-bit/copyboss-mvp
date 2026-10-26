@@ -22,6 +22,7 @@ export default function Nav() {
 
   return (
     <nav className="w-full border-b border-black/10 dark:border-white/15 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+      <div className="h-0.5 w-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400" />
       <div className="mx-auto max-w-4xl flex items-center justify-between px-6 py-4">
         <Link href="/" className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-lg font-bold text-transparent">
           CopyBoss
@@ -36,8 +37,8 @@ export default function Nav() {
                 href={项.href}
                 className={
                   当前
-                    ? "text-black dark:text-zinc-50 font-medium"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-50"
+                    ? "brand-text font-semibold"
+                    : "text-zinc-500 transition-colors hover:text-fuchsia-600 dark:text-zinc-400 dark:hover:text-fuchsia-300"
                 }
               >
                 {项.label}
@@ -71,7 +72,7 @@ export default function Nav() {
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-full bg-black dark:bg-white px-3 py-1 text-white dark:text-black text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                  className="rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 px-3.5 py-1 text-white text-sm font-medium shadow-sm shadow-fuchsia-500/25 transition-opacity hover:opacity-85"
                 >
                   Sign up
                 </Link>

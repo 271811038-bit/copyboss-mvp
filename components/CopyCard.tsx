@@ -22,6 +22,17 @@ type 一条文案 = {
   createdAt: string; // ISO 字符串（从 DateTime 序列化过来的）
 };
 
+// 各平台品牌配色徽章（与 /history 页保持一致）
+const 平台徽章: Record<string, string> = {
+  Instagram: "border-pink-200 bg-pink-50 text-pink-600 dark:border-pink-900/60 dark:bg-pink-950/40 dark:text-pink-300",
+  TikTok: "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900/60 dark:bg-cyan-950/40 dark:text-cyan-300",
+  LinkedIn: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300",
+  X: "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  YouTube: "border-red-200 bg-red-50 text-red-600 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300",
+};
+const 风格徽章 =
+  "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-300";
+
 export default function CopyCard({ 条 }: { 条: 一条文案 }) {
   const 路由 = useRouter();
   const [展开, 设置展开] = useState(false);
@@ -172,10 +183,10 @@ export default function CopyCard({ 条 }: { 条: 一条文案 }) {
               ✏️ Editing
             </span>
           )}
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+          <span className={`rounded-full border px-2 py-0.5 ${平台徽章[条.platform] ?? "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"}`}>
             {条.platform}
           </span>
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+          <span className={`rounded-full border px-2 py-0.5 ${风格徽章}`}>
             {条.style}
           </span>
         </div>
