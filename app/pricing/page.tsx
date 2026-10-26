@@ -107,7 +107,7 @@ export default async function PricingPage() {
             For creators posting every day
           </p>
           <p className="mt-4 text-4xl font-bold text-black dark:text-zinc-50">
-            $9.99
+            $9.9
             <span className="text-base font-normal text-zinc-400"> /mo</span>
           </p>
           <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
@@ -148,7 +148,7 @@ export default async function PricingPage() {
                 href="/api/checkout/creem"
                 className="block w-full rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 py-2.5 text-center text-sm font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90"
               >
-                Upgrade Pro · $9.99/mo
+                Upgrade Pro · $9.9/mo
               </a>
             ) : (
               <span className="block w-full cursor-not-allowed rounded-full bg-black/10 py-2.5 text-center text-sm font-medium text-zinc-500 dark:bg-white/10 dark:text-zinc-400">
