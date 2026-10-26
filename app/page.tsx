@@ -33,7 +33,7 @@ const 常见问题 = [
   },
   {
     问: "What's the difference between Free and Pro?",
-    答: "1 credit = 1 platform × 1 tone (3 copies). Free gives you 1 credit per day; Pro is $9.9/mo with 10 credits per day (30 copies), or $99/year with 20 credits per day (60 copies). Top-up packs from $1. Cancel anytime.",
+    答: "1 credit = 1 platform × 1 tone (3 copies). Free gives you 1 credit per day; Pro is $9.99/mo with 10 credits per day (30 copies), or $99/year with 15 credits per day (45 copies). Top-up packs from $1. Cancel anytime.",
   },
   {
     问: "Is my input public?",

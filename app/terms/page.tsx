@@ -52,8 +52,8 @@ export default function TermsPage() {
           <p className={段落}>
             Credits are the unit of usage: 1 credit generates copy for one
             platform in one tone (3 copies). The free plan includes 1 credit per
-            day. Pro is available as a monthly subscription ($9.9/month, 10
-            credits per day) or a yearly subscription ($99/year, 20 credits per
+            day. Pro is available as a monthly subscription ($9.99/month, 10
+            credits per day) or a yearly subscription ($99/year, 15 credits per
             day), billed
             through our payment partner Creem. Top-up packs are one-time
             purchases ($1 per 10 or 20 credits depending on your plan) and

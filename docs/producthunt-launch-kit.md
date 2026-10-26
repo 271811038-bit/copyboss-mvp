@@ -68,7 +68,7 @@ So CopyBoss is platform-aware instead of platform-agnostic:
 
 Everything is editable and copy-paste ready. Your history is saved so you can come back to drafts.
 
-Pricing: 1 credit = 1 platform × 1 tone (3 copies). Free gives you 1 credit/day, Pro is $9.9/mo (10 credits/day = 30 copies) or $99/yr (20 credits/day = 60 copies). No credit card needed to test it.
+Pricing: 1 credit = 1 platform × 1 tone (3 copies). Free gives you 1 credit/day, Pro is $9.99/mo (10 credits/day = 30 copies) or $99/yr (15 credits/day = 45 copies). No credit card needed to test it.
 
 I built this solo and I'm here all day — ask me anything, and I'd genuinely love feedback on the copy quality. Roast my outputs if they deserve it 🔥
 ```

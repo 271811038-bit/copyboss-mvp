@@ -4,7 +4,7 @@
 //   计价单位：「1 credit = 1 个平台 × 1 个风格」（产出 3 条文案）
 //   FREE       ：每天 1 credit
 //   PRO        ：每天 10 credits
-//   PRO_YEARLY ：每天 20 credits
+//   PRO_YEARLY ：每天 15 credits
 //   加油包     ：当日额度用尽后可买（$1 / 10 credits，包年用户 $1 / 20 credits），
 //                购买即写入 User.extraCredits，不随每日重置，用完为止
 //
@@ -24,7 +24,7 @@ import { prisma } from "./db";
 export const 每日额度表: Record<string, number> = {
   FREE: 1,
   PRO: 10,
-  PRO_YEARLY: 20,
+  PRO_YEARLY: 15,
 };
 
 // 兼容旧命名（历史代码/脚本还在引用）
