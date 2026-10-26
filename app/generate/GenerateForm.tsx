@@ -26,16 +26,23 @@ const 初始状态: 生成结果状态 = {
   额度: null,
 };
 
+// 1 credit = 1 平台 × 1 风格 = 3 条（与 lib/limits.ts 的 每额度条数 保持一致）
+const 每额度条数 = 3;
+
 // 提交按钮（单独组件才能用 useFormStatus 拿"提交中"状态）
-function 提交按钮({ 超额 }: { 超额: boolean }) {
+function 提交按钮({ 超额, 需额度, 额度不足 }: { 超额: boolean; 需额度: number; 额度不足: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending || 超额}
+      disabled={pending || 超额 || 额度不足}
       className="mb-10 flex h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 text-base font-semibold text-white shadow-md shadow-fuchsia-500/20 transition-all hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
     >
-      {pending ? "AI is writing… (10-30s, don't leave this page)" : "Generate Copy"}
+      {pending
+        ? "AI is writing… (10-20s, don't leave this page)"
+        : 需额度 > 0
+          ? `Generate · ${需额度} credit${需额度 > 1 ? "s" : ""} → ${需额度 * 每额度条数} copies`
+          : "Generate Copy"}
     </button>
   );
 }
@@ -65,6 +72,19 @@ export default function GenerateForm({
 
   // state：刚复制的是第几条（纯增强，无 JS 时按钮不显示也不碍事）
   const [已复制, 设置已复制] = useState<number | null>(null);
+
+  // 已选平台/风格：只用于实时展示"本次消耗多少额度"。
+  // 无 JS 时这里不生效，但服务端仍会精确校验（不依赖前端）。
+  const [已选平台, 设已选平台] = useState<string[]>([]);
+  const [已选风格, 设已选风格] = useState<string[]>([]);
+
+  function 切换(列表: string[], 值: string, 选中: boolean): string[] {
+    return 选中 ? [...new Set([...列表, 值])] : 列表.filter((x) => x !== 值);
+  }
+
+  // 本次消耗 = 平台数 × 风格数（1 credit 出 3 条）
+  const 需额度 = 已选平台.length * 已选风格.length;
+  const 额度不足 = 需额度 > 额度.剩余;
 
   // 一键复制（复制不计额度）—— 仅 JS 可用时生效
   async function 复制文案(内容: string, 序号: number) {
@@ -123,7 +143,7 @@ export default function GenerateForm({
               {" "}
               {额度.已用} / {额度.总数}
             </strong>
-            , <strong>{额度.剩余}</strong> left
+            , <strong>{额度.剩余}</strong> credits left
             {额度.plan === "PRO" && (额度.加油包剩余 ?? 0) > 0 && (
               <span className="ml-1 text-violet-600 dark:text-violet-400">
                 (incl. {额度.加油包剩余} top-up credits)
@@ -149,7 +169,7 @@ export default function GenerateForm({
             href="/pricing"
             className="ml-3 shrink-0 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-opacity hover:opacity-85"
           >
-            Upgrade Pro · 10/day
+            Upgrade Pro · 10 credits/day
           </Link>
         )}
       </section>
@@ -189,6 +209,10 @@ export default function GenerateForm({
           <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
             ② Pick platforms (multi-select, click a pill to toggle)
           </h2>
+          <p className="mb-3 rounded-lg bg-violet-50 px-3 py-2 text-xs leading-5 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
+            1 credit = 1 platform × 1 tone → {每额度条数} copies. Selecting 2 platforms × 2 tones
+            uses 4 credits.
+          </p>
           <div className="flex flex-wrap gap-3">
             {平台.map((名称) => (
               <label key={名称} className="cursor-pointer">
@@ -196,6 +220,7 @@ export default function GenerateForm({
                   type="checkbox"
                   name="platform"
                   value={名称}
+                  onChange={(e) => 设已选平台((前) => 切换(前, 名称, e.target.checked))}
                   className="peer sr-only"
                 />
                 <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-transparent peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-fuchsia-500 peer-checked:text-white peer-checked:shadow-sm dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-transparent dark:peer-checked:from-violet-500 dark:peer-checked:to-fuchsia-500 dark:peer-checked:text-white">
@@ -218,6 +243,7 @@ export default function GenerateForm({
                   type="checkbox"
                   name="style"
                   value={名称}
+                  onChange={(e) => 设已选风格((前) => 切换(前, 名称, e.target.checked))}
                   className="peer sr-only"
                 />
                 <span className="inline-block rounded-full border border-black/15 px-4 py-2 text-sm text-zinc-700 transition-colors hover:border-black/40 peer-checked:border-transparent peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-fuchsia-500 peer-checked:text-white peer-checked:shadow-sm dark:border-white/20 dark:text-zinc-300 dark:hover:border-white/40 dark:peer-checked:border-transparent dark:peer-checked:from-violet-500 dark:peer-checked:to-fuchsia-500 dark:peer-checked:text-white">
@@ -227,6 +253,26 @@ export default function GenerateForm({
             ))}
           </div>
         </section>
+
+        {/* 本次消耗实时提示（JS 可用时；无 JS 由服务端校验兜底） */}
+        {需额度 > 0 && (
+          <div
+            className={`mb-5 flex items-center justify-between rounded-xl border px-4 py-3 text-xs ${
+              额度不足
+                ? "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+                : "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200"
+            }`}
+          >
+            <span>
+              This run: {已选平台.length} platform{已选平台.length > 1 ? "s" : ""} ×{" "}
+              {已选风格.length} tone{已选风格.length > 1 ? "s" : ""} ={" "}
+              <strong>{需额度} credit{需额度 > 1 ? "s" : ""}</strong> → {需额度 * 每额度条数} copies
+            </span>
+            <span className={额度不足 ? "font-medium" : "opacity-75"}>
+              {额度不足 ? `Only ${额度.剩余} credit${额度.剩余 === 1 ? "" : "s"} left — reduce selection` : `${额度.剩余} credit${额度.剩余 === 1 ? "" : "s"} left today`}
+            </span>
+          </div>
+        )}
 
         {/* 出错提示 */}
         {状态.error && (
@@ -240,7 +286,7 @@ export default function GenerateForm({
           </div>
         )}
 
-        <提交按钮 超额={额度.超额} />
+        <提交按钮 超额={额度.超额} 需额度={需额度} 额度不足={额度不足} />
       </form>
 
       {/* 结果区 */}
@@ -250,6 +296,7 @@ export default function GenerateForm({
           {状态.文案们.length > 0 && (
             <span className="text-xs text-zinc-400 dark:text-zinc-500">
               {状态.文案们.length} saved to history
+              {typeof 状态.消耗 === "number" && 状态.消耗 > 0 ? ` · ${状态.消耗} credit${状态.消耗 > 1 ? "s" : ""} used` : ""}
             </span>
           )}
         </h2>

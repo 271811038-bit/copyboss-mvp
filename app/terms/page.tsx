@@ -50,11 +50,13 @@ export default function TermsPage() {
 
           <h2 className={标题}>4. Subscriptions and billing</h2>
           <p className={段落}>
-            The free plan includes 1 generation per day. Pro is available as a
-            monthly subscription ($9.99/month, 10 generations per day) or a
-            yearly subscription ($99/year, 20 generations per day), billed
+            Credits are the unit of usage: 1 credit generates copy for one
+            platform in one tone (3 copies). The free plan includes 1 credit per
+            day. Pro is available as a monthly subscription ($9.99/month, 10
+            credits per day) or a yearly subscription ($99/year, 20 credits per
+            day), billed
             through our payment partner Creem. Top-up packs are one-time
-            purchases ($1 per 10 or 20 generations depending on your plan) and
+            purchases ($1 per 10 or 20 credits depending on your plan) and
             their credits never expire. Daily quotas reset at midnight UTC.
             Unused daily quota does not roll over.
           </p>

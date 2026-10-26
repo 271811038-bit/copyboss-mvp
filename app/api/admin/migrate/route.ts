@@ -20,6 +20,10 @@ const 迁移清单: { 名称: string; SQL: string }[] = [
     名称: "User.extraCredits 加油包剩余次数",
     SQL: 'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "extraCredits" INTEGER NOT NULL DEFAULT 0',
   },
+  {
+    名称: "Generation.creditCount 本次消耗额度数",
+    SQL: 'ALTER TABLE "Generation" ADD COLUMN IF NOT EXISTS "creditCount" INTEGER NOT NULL DEFAULT 1',
+  },
 ];
 
 export async function POST(请求: Request) {

@@ -8,16 +8,23 @@
 // 渐进增强：JS 正常时拦截提交；JS 挂掉时浏览器原生 POST 表单，
 // 服务器完成生成 + 存库 + 返回整页新 HTML（结果直接渲染出来）。
 // 逻辑与 /api/generate 完全一致（保留该 API 供其他调用方）。
+//
+// 2026-10-26 改版：额度从"按点击"改为"按组合"计费
+//   1 credit = 1 平台 × 1 风格 = 3 条文案
+//   勾 2 平台 × 2 风格 = 4 credits = 12 条
 // ============================================================
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { 生成文案 } from "@/lib/ai";
-import { 查额度, 扣加油包若超额 } from "@/lib/limits";
+import { 查额度, 结算加油包, 今日已用额度, 每额度条数 } from "@/lib/limits";
 import type { 生成结果状态 } from "./types";
 
-// 每种「平台 × 风格」组合生成几条（与 API 版一致）
-const 每组条数 = 5;
+// 每个「平台 × 风格」组合生成几条（3 条质量更集中，也把等待时间压到 1/3）
+const 每组条数 = 每额度条数;
+
+// 并发度：一次最多同时跑 4 个组合，兼顾速度与 DeepSeek 限流
+const 并发度 = 4;
 
 export async function 生成文案Action(
   _之前: 生成结果状态,
@@ -54,50 +61,90 @@ export async function 生成文案Action(
   }
   if (产品.length > 500) 产品 = 产品.slice(0, 500);
 
+  // 本次需要多少 credits = 平台数 × 风格数
+  const 需要额度 = 平台们.length * 风格们.length;
+
   // ④ 额度闸（前端永远不能信）
   const 额度检查 = await 查额度(会话.user.id);
-  if (额度检查.超额) {
+  if (额度检查.剩余 < 需要额度) {
+    const 提示 =
+      额度检查.剩余 <= 0
+        ? 额度检查.plan === "FREE"
+          ? `Your daily free credit (1) is used up. Resets at midnight UTC — upgrade to Pro for 10 credits/day.`
+          : `Your daily ${额度检查.总数} credits and top-up credits are all used up. Resets at midnight UTC — or grab a top-up pack.`
+        : `This selection needs ${需要额度} credits (${平台们.length} platform${平台们.length > 1 ? "s" : ""} × ${风格们.length} tone${风格们.length > 1 ? "s" : ""}), but you only have ${额度检查.剩余} left. Uncheck some platforms/tones, or upgrade.`;
+
     return {
-      error:
-        额度检查.plan === "PRO"
-          ? `Your daily ${额度检查.总数} Pro generations and top-up credits are all used up. Resets at midnight UTC — or grab another top-up pack ($1 / 10 generations)`
-          : `Your daily free quota (${额度检查.总数} generation) is used up. Resets automatically at midnight UTC — upgrade to Pro for 10 generations/day.`,
+      error: 提示,
       文案们: [],
       错误们: [],
       额度: {
         plan: 额度检查.plan,
         已用: 额度检查.已用,
-        剩余: 0,
+        剩余: 额度检查.剩余,
         总数: 额度检查.总数,
-        超额: true,
+        超额: 额度检查.超额,
         加油包剩余: 额度检查.加油包剩余,
+        当日剩余: 额度检查.当日剩余,
       },
     };
   }
 
-  // ⑤ 逐组生成（平台 × 风格 = 一组，每组 5 条）——与 API 版同逻辑
-  const 存库结果: { 平台: string; 风格: string; 内容: string }[] = [];
-  const 错误们: string[] = [];
+  // ⑤ 并发跑组合（平台 × 风格 = 一个任务，每个任务 3 条）
+  const 任务们 = 平台们.flatMap((平台) => 风格们.map((风格) => ({ 平台, 风格 })));
+  const 结果表: {
+    平台: string;
+    风格: string;
+    结果: Awaited<ReturnType<typeof 生成文案>> | null;
+  }[] = 任务们.map((任务) => ({ ...任务, 结果: null }));
 
-  for (const 平台 of 平台们) {
-    for (const 风格 of 风格们) {
-      const 结果 = await 生成文案({
-        产品: 产品.trim(),
-        平台,
-        风格,
-        数量: 每组条数,
-      });
-
-      if (!结果.ok) {
-        错误们.push(`${平台}×${风格}: ${结果.原因}`);
-        continue;
+  let 指针 = 0;
+  async function 工人() {
+    while (true) {
+      const 序号 = 指针++;
+      if (序号 >= 任务们.length) return;
+      const { 平台, 风格 } = 任务们[序号];
+      try {
+        结果表[序号].结果 = await 生成文案({
+          产品: 产品.trim(),
+          平台,
+          风格,
+          数量: 每组条数,
+        });
+      } catch (错误) {
+        结果表[序号].结果 = {
+          ok: false,
+          原因: 错误 instanceof Error ? 错误.message : "unknown error",
+        } as Awaited<ReturnType<typeof 生成文案>>;
       }
-      结果.文案.forEach((内容) => 存库结果.push({ 平台, 风格, 内容 }));
     }
   }
+  await Promise.all(
+    Array.from({ length: Math.min(并发度, 任务们.length) }, () => 工人())
+  );
 
-  // ⑥ 存库 + 写 Generation 日志（扣额度依据）
-  if (存库结果.length > 0) {
+  // ⑥ 汇总结果（成功的组合才计费）
+  const 存库结果: { 平台: string; 风格: string; 内容: string }[] = [];
+  const 错误们: string[] = [];
+  let 成功组合数 = 0;
+
+  for (const 项 of 结果表) {
+    const 结果 = 项.结果;
+    if (!结果 || !结果.ok) {
+      错误们.push(`${项.平台}×${项.风格}: ${结果 && !结果.ok ? 结果.原因 : "failed"}`);
+      continue;
+    }
+    成功组合数 += 1;
+    结果.文案.forEach((内容) =>
+      存库结果.push({ 平台: 项.平台, 风格: 项.风格, 内容 })
+    );
+  }
+
+  // ⑦ 存库 + 写 Generation 日志（creditCount = 成功组合数 = 实际扣的额度）
+  const 已用前 = 额度检查.已用;
+  let 已用后 = 已用前;
+
+  if (存库结果.length > 0 && 成功组合数 > 0) {
     await prisma.copy.createMany({
       data: 存库结果.map((条) => ({
         userId: 会话.user.id,
@@ -114,12 +161,20 @@ export async function 生成文案Action(
         styles: JSON.stringify(风格们),
         product: 产品.trim().slice(0, 200),
         copyCount: 存库结果.length,
+        creditCount: 成功组合数,
       },
     });
+
+    已用后 = 已用前 + 成功组合数;
   }
 
-  // ⑦ 当日额度用尽时扣加油包（买过加油包的场景），再查一次最新额度一并返回
-  await 扣加油包若超额(会话.user.id);
+  // ⑧ 超出当日额度的部分，从加油包扣
+  if (已用后 > 已用前) {
+    await 结算加油包(会话.user.id, 已用前, 已用后);
+    // 以防并发请求导致统计偏差，最终以数据库为准重算一次
+    已用后 = await 今日已用额度(会话.user.id);
+  }
+
   const 新额度 = await 查额度(会话.user.id);
 
   return {
@@ -136,6 +191,8 @@ export async function 生成文案Action(
       总数: 新额度.总数,
       超额: 新额度.超额,
       加油包剩余: 新额度.加油包剩余,
+      当日剩余: 新额度.当日剩余,
     },
+    消耗: 成功组合数,
   };
 }

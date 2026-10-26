@@ -59,6 +59,7 @@ model Generation {
   styles    String
   product   String
   copyCount Int
+  creditCount Int   @default(1) // 本次消耗的额度数（= 平台数 × 风格数）
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

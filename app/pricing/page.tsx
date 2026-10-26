@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 // 三档功能对比（单一数据源，改价只改这里）
 const 对比项 = [
-  { 功能: "Daily generations", 免费: "1", 月付: "10", 包年: "20" },
+  { 功能: "Daily credits (1 credit = 1 platform × 1 tone = 3 copies)", 免费: "1", 月付: "10", 包年: "20" },
   { 功能: "Top-up pack", 免费: "—", 月付: "$1 / 10 gens", 包年: "$1 / 20 gens" },
   { 功能: "Platforms", 免费: "All 5", 月付: "All 5", 包年: "All 5" },
   { 功能: "Tones", 免费: "All 4", 月付: "All 4", 包年: "All 4" },
@@ -75,7 +75,7 @@ export default async function PricingPage() {
             <span className="text-base font-normal text-zinc-400"> /mo</span>
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🎁 1 generation per day</li>
+            <li>🎁 1 credit / day (3 copies)</li>
             <li>📱 All platforms &amp; tones</li>
             <li>📚 History saved forever</li>
           </ul>
@@ -114,7 +114,7 @@ export default async function PricingPage() {
             Billed monthly · Cancel anytime
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🚀 10 generations per day</li>
+            <li>🚀 10 credits / day (30 copies)</li>
             <li>⛽ Top-up pack $1 / 10 gens</li>
             <li>⚡ Early access to new features</li>
             <li>🔒 Cancel anytime</li>
@@ -177,7 +177,7 @@ export default async function PricingPage() {
             ≈ $8.25/mo · 2 months free vs monthly
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <li>🚀 20 generations per day</li>
+            <li>🚀 20 credits / day (60 copies)</li>
             <li>⛽ Top-up pack $1 / 20 gens</li>
             <li>⚡ Priority early access</li>
             <li>🔒 Cancel anytime</li>
@@ -232,7 +232,7 @@ export default async function PricingPage() {
       {(plan === "PRO" || plan === "PRO_YEARLY") && (
         <section className="mb-10 flex flex-col items-center gap-3 rounded-2xl border border-black/10 p-5 text-center dark:border-white/15">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Need more generations today? Top-up credits never expire and are consumed automatically when your daily quota runs out.
+            Need more today? 1 credit = 1 platform × 1 tone (3 copies). Top-up credits never expire and are used automatically once your daily quota runs out.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a
