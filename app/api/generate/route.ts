@@ -27,7 +27,7 @@ export async function POST(请求: Request) {
   }
 
   // ② 参数体检（先校验参数，再算需要多少额度）
-  const { 平台们, 风格们, 产品 } = await 请求.json();
+  const { 平台们, 风格们, 产品, 语言 } = await 请求.json();
   if (
     !Array.isArray(平台们) ||
     !Array.isArray(风格们) ||
@@ -68,7 +68,11 @@ export async function POST(请求: Request) {
     );
   }
 
-  // ④ 并发生成（平台 × 风格 = 一个任务）
+  // ④ 并发生成（平台 × 风格 = 一个任务）；带上品牌声音与输出语言
+  const 用户档案 = await prisma.user.findUnique({
+    where: { id: 会话.user.id },
+    select: { brandVoice: true },
+  });
   const 任务们 = 平台们.flatMap((平台: string) =>
     风格们.map((风格: string) => ({ 平台, 风格 }))
   );
@@ -94,6 +98,8 @@ export async function POST(请求: Request) {
           平台,
           风格,
           数量: 每组条数,
+          语言: typeof 语言 === "string" ? 语言 : "auto",
+          品牌声音: 用户档案?.brandVoice || undefined,
         });
         if (结果表[序号].结果?.ok) {
           用的AI = 结果表[序号].结果!.用的AI;

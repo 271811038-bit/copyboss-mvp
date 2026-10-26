@@ -45,6 +45,7 @@ export async function 生成文案Action(
   let 产品 = String(formData.get("product") ?? "");
   const 平台们 = formData.getAll("platform").map(String);
   const 风格们 = formData.getAll("style").map(String);
+  const 语言 = String(formData.get("language") ?? "auto");
 
   // ③ 参数体检（无 JS 时浏览器原生校验可能被绕过，服务端必须把住）
   if (
@@ -91,6 +92,11 @@ export async function 生成文案Action(
   }
 
   // ⑤ 并发跑组合（平台 × 风格 = 一个任务，每个任务 3 条）
+  // P1：带上用户保存的品牌声音（有则注入 prompt，无则跳过）
+  const 用户档案 = await prisma.user.findUnique({
+    where: { id: 会话.user.id },
+    select: { brandVoice: true },
+  });
   const 任务们 = 平台们.flatMap((平台) => 风格们.map((风格) => ({ 平台, 风格 })));
   const 结果表: {
     平台: string;
@@ -110,6 +116,8 @@ export async function 生成文案Action(
           平台,
           风格,
           数量: 每组条数,
+          语言,
+          品牌声音: 用户档案?.brandVoice || undefined,
         });
       } catch (错误) {
         结果表[序号].结果 = {
@@ -195,4 +203,28 @@ export async function 生成文案Action(
     },
     消耗: 成功组合数,
   };
+}
+
+// ============================================================
+// P1：保存品牌声音（Brand Voice）
+// 独立 action，不占用生成额度；存到 User.brandVoice，之后每次
+// 生成自动注入 prompt。清空文本框保存 = 删除品牌声音。
+// ============================================================
+export async function 保存品牌声音Action(
+  _之前: { saved: boolean; error: string },
+  formData: FormData
+): Promise<{ saved: boolean; error: string }> {
+  const 会话 = await auth();
+  if (!会话?.user?.id) {
+    return { saved: false, error: "Your session has expired. Please log in again." };
+  }
+
+  const 文本 = String(formData.get("brandVoice") ?? "").trim().slice(0, 2000);
+
+  await prisma.user.update({
+    where: { id: 会话.user.id },
+    data: { brandVoice: 文本 || null },
+  });
+
+  return { saved: true, error: "" };
 }

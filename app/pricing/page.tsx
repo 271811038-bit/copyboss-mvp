@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 // 三档功能对比（单一数据源，改价只改这里）
 const 对比项 = [
-  { 功能: "Daily credits (1 credit = 1 platform × 1 tone = 3 copies)", 免费: "1", 月付: "10", 包年: "20" },
+  { 功能: "Daily credits (1 credit = 1 platform × 1 tone = 3 copies)", 免费: "1", 月付: "10", 包年: "15" },
   { 功能: "Top-up pack", 免费: "—", 月付: "$1 / 10 gens", 包年: "$1 / 20 gens" },
   { 功能: "Platforms", 免费: "All 5", 月付: "All 5", 包年: "All 5" },
   { 功能: "Tones", 免费: "All 4", 月付: "All 4", 包年: "All 4" },

@@ -8,6 +8,7 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { 查额度 } from "@/lib/limits";
 import GenerateForm from "./GenerateForm";
 
@@ -18,6 +19,10 @@ export default async function GeneratePage() {
   }
 
   const 额度 = await 查额度(会话.user.id);
+  const 用户档案 = await prisma.user.findUnique({
+    where: { id: 会话.user.id },
+    select: { brandVoice: true },
+  });
 
   // Date 不能直接通过 server→client 边界，转 ISO 字符串
   const 初始额度 = {
@@ -29,5 +34,7 @@ export default async function GeneratePage() {
     下次重置: 额度.下次重置.toISOString(),
   };
 
-  return <GenerateForm 初始额度={初始额度} />;
+  return (
+    <GenerateForm 初始额度={初始额度} 初始品牌声音={用户档案?.brandVoice ?? ""} />
+  );
 }

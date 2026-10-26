@@ -12,7 +12,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { 生成文案Action } from "./actions";
+import { 生成文案Action, 保存品牌声音Action } from "./actions";
 import type { 生成结果状态, 额度快照 } from "./types";
 
 const 平台 = ["Instagram", "TikTok", "LinkedIn", "X", "YouTube"];
@@ -49,6 +49,7 @@ function 提交按钮({ 超额, 需额度, 额度不足 }: { 超额: boolean; �
 
 export default function GenerateForm({
   初始额度,
+  初始品牌声音,
 }: {
   初始额度: {
     plan: string;
@@ -58,6 +59,7 @@ export default function GenerateForm({
     超额: boolean;
     下次重置: string;
   };
+  初始品牌声音: string;
 }) {
   // useActionState：JS 正常时 React 拦截提交并拿返回值；
   // JS 挂掉时浏览器原生提交，服务器返回的 HTML 里已带着新状态
@@ -72,6 +74,13 @@ export default function GenerateForm({
 
   // state：刚复制的是第几条（纯增强，无 JS 时按钮不显示也不碍事）
   const [已复制, 设置已复制] = useState<number | null>(null);
+  const [已复制全部, 设已复制全部] = useState(false);
+
+  // P1：品牌声音保存状态（独立于生成表单）
+  const [音色状态, 音色动作, 音色提交中] = useActionState(保存品牌声音Action, {
+    saved: false,
+    error: "",
+  });
 
   // 已选平台/风格：只用于实时展示"本次消耗多少额度"。
   // 无 JS 时这里不生效，但服务端仍会精确校验（不依赖前端）。
@@ -100,6 +109,39 @@ export default function GenerateForm({
     }
     设置已复制(序号);
     setTimeout(() => 设置已复制(null), 2000);
+  }
+
+  // P0：一键复制全部（带平台/风格标签，方便分平台粘贴）
+  function 全部文本(): string {
+    return 状态.文案们
+      .map((条) => `${条.平台} · ${条.风格}\n${条.内容}`)
+      .join("\n\n————————————\n\n");
+  }
+
+  async function 复制全部() {
+    const 文本 = 全部文本();
+    try {
+      await navigator.clipboard.writeText(文本);
+    } catch {
+      const 文本框 = document.createElement("textarea");
+      文本框.value = 文本;
+      document.body.appendChild(文本框);
+      文本框.select();
+      document.execCommand("copy");
+      document.body.removeChild(文本框);
+    }
+    设已复制全部(true);
+    setTimeout(() => 设已复制全部(false), 2000);
+  }
+
+  // P0：导出 .txt（本地生成文件，不经过服务器）
+  function 下载TXT() {
+    const blob = new Blob([全部文本()], { type: "text/plain;charset=utf-8" });
+    const 链接 = document.createElement("a");
+    链接.href = URL.createObjectURL(blob);
+    链接.download = "copyboss-copies.txt";
+    链接.click();
+    URL.revokeObjectURL(链接.href);
   }
 
   // 把下次重置时间转成"Xh Ym left"
@@ -173,6 +215,47 @@ export default function GenerateForm({
           </Link>
         )}
       </section>
+
+      {/* P1：品牌声音（独立小表单，不占用生成额度；无 JS 时也能原生提交） */}
+      <details
+        className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50/50 open:bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/30"
+        open={初始品牌声音 !== ""}
+      >
+        <summary className="cursor-pointer list-none p-4 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+          🎙️ Brand voice {初始品牌声音 ? "· saved ✓ (click to edit)" : "· optional — save once, auto-applied to every generation"}
+        </summary>
+        <form action={音色动作} className="px-4 pb-4">
+          <textarea
+            name="brandVoice"
+            rows={3}
+            maxLength={2000}
+            defaultValue={初始品牌声音}
+            placeholder="e.g. Our product is an eco-friendly yoga mat for busy moms. Brand voice: warm, encouraging, never salesy. Audience: women 28-40 in the US. Always mention free shipping."
+            className="w-full resize-none rounded-lg border border-emerald-300/60 bg-white px-4 py-2.5 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-emerald-500 dark:border-emerald-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-emerald-600"
+          />
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={音色提交中}
+              className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-85 disabled:opacity-40"
+            >
+              {音色提交中 ? "Saving…" : "Save brand voice"}
+            </button>
+            {音色状态.saved && (
+              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                ✓ Saved — it will be applied to all future generations
+              </span>
+            )}
+            {音色状态.error && (
+              <span className="text-xs font-medium text-red-600 dark:text-red-400">{音色状态.error}</span>
+            )}
+          </div>
+          <p className="mt-2 text-xs leading-5 text-emerald-700/70 dark:text-emerald-400/70">
+            Describe your product positioning, target audience and preferred tone once — the AI will
+            follow it in every generation. Clear the box and save to remove it.
+          </p>
+        </form>
+      </details>
 
       {/* 关键：整个表单用 form action（Server Action），无 JS 也能原生提交 */}
       <form action={表单动作}>
@@ -252,6 +335,33 @@ export default function GenerateForm({
               </label>
             ))}
           </div>
+
+          {/* P2：输出语言（原生 select，无 JS 也能用） */}
+          <div className="mt-4 flex items-center gap-3">
+            <label
+              htmlFor="language"
+              className="text-sm font-medium text-zinc-500 dark:text-zinc-400"
+            >
+              Output language
+            </label>
+            <select
+              id="language"
+              name="language"
+              defaultValue="auto"
+              className="rounded-lg border border-black/15 bg-transparent px-3 py-1.5 text-sm text-black outline-none focus:border-black/40 dark:border-white/20 dark:text-zinc-100 dark:focus:border-white/40 [&>option]:text-black"
+            >
+              <option value="auto">Auto (match my description)</option>
+              <option value="English">English</option>
+              <option value="Spanish">Spanish</option>
+              <option value="Portuguese">Portuguese</option>
+              <option value="German">German</option>
+              <option value="French">French</option>
+              <option value="Japanese">Japanese</option>
+            </select>
+            <span className="text-xs text-zinc-400 dark:text-zinc-500">
+              Reach international audiences without rewriting
+            </span>
+          </div>
         </section>
 
         {/* 本次消耗实时提示（JS 可用时；无 JS 由服务端校验兜底） */}
@@ -294,9 +404,26 @@ export default function GenerateForm({
         <h2 className="mb-3 flex items-center justify-between text-sm font-medium text-zinc-500 dark:text-zinc-400">
           <span>Your copy</span>
           {状态.文案们.length > 0 && (
-            <span className="text-xs text-zinc-400 dark:text-zinc-500">
-              {状态.文案们.length} saved to history
-              {typeof 状态.消耗 === "number" && 状态.消耗 > 0 ? ` · ${状态.消耗} credit${状态.消耗 > 1 ? "s" : ""} used` : ""}
+            <span className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                {状态.文案们.length} saved to history
+                {typeof 状态.消耗 === "number" && 状态.消耗 > 0 ? ` · ${状态.消耗} credit${状态.消耗 > 1 ? "s" : ""} used` : ""}
+              </span>
+              {/* P0：一键复制全部 / 导出 */}
+              <button
+                type="button"
+                onClick={复制全部}
+                className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:opacity-85"
+              >
+                {已复制全部 ? "✓ All copied" : `Copy all (${状态.文案们.length})`}
+              </button>
+              <button
+                type="button"
+                onClick={下载TXT}
+                className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Export .txt
+              </button>
             </span>
           )}
         </h2>

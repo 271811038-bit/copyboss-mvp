@@ -11,14 +11,14 @@
 // 不告诉 AI 平台特点，它就会写出"放到哪个平台都不合适"的通用废话
 const 平台规矩: Record<string, string> = {
   Instagram:
-    "Instagram post style: catchy hook-style caption with 1-2 relevant emojis, short punchy paragraphs with line breaks, authentic storytelling feel, end with a call-to-action and 5-10 relevant hashtags (#hashtag format), total length 100-220 words.",
+    "Instagram post style: catchy hook-style caption with 1-3 relevant emojis, short punchy paragraphs with line breaks, authentic storytelling feel, end with a call-to-action and 8-12 niche hashtags (#hashtag format, mix big and small tags), total length 100-220 words.",
   TikTok:
-    "TikTok video script style: the first 3 seconds must have a strong hook (question/conflict/unexpected claim), fast pacing, short sentences, vivid and conversational like talking to a friend, spoken-word format, end with a call-to-action to follow, total length 60-140 words.",
+    "TikTok video script style: the first 3 seconds must have a strong hook (question/conflict/unexpected claim), fast pacing, short sentences, vivid and conversational like talking to a friend, spoken-word format, end with a call-to-action to follow, and append 3-5 niche hashtags (#hashtag format) at the end, total length 60-140 words.",
   LinkedIn:
     "LinkedIn post style: professional but human tone, opens with a strong insight or contrarian take, clear structure with short paragraphs, shares concrete value or lessons learned, ends with a question to spark discussion, minimal hashtags (3-5), total length 120-250 words.",
   X: "X (Twitter) post style: under 280 characters, one sharp idea per post, punchy and quotable, strong hook in the first line, optionally 1-2 emojis and up to 2 hashtags, no fluff.",
   YouTube:
-    "YouTube video script style: hook in the first 5 seconds promising the payoff, clear section structure with timestamps-friendly transitions, conversational and energetic, end with subscribe call-to-action, total length 120-250 words.",
+    "YouTube video script style: hook in the first 5 seconds promising the payoff, clear section structure with timestamps-friendly transitions, conversational and energetic, end with subscribe call-to-action and include 2-3 hashtags at the end, total length 120-250 words.",
 };
 
 const 风格规矩: Record<string, string> = {
@@ -54,16 +54,38 @@ Wrong example 2 (wrapped in a markdown code block, will be rejected):
 \`\`\`json\\n["...","..."]\\n\`\`\``;
 
 // 给 AI 的任务单（user prompt）——每次生成都现场拼装
-function 拼任务单(产品: string, 平台: string, 风格: string, 数量: number): string {
-  return `Product info: ${产品}
+function 拼任务单(参数: {
+  产品: string;
+  平台: string;
+  风格: string;
+  数量: number;
+  语言?: string;
+  品牌声音?: string;
+}): string {
+  // P2：输出语言（auto = 跟随产品描述语言，否则强制指定）
+  const 语言指令 =
+    !参数.语言 || 参数.语言 === "auto"
+      ? "Write all copy in the same language as the product info (English if ambiguous)."
+      : `Write ALL copy in ${参数.语言}, no matter what language the product info is in.`;
 
-Platform: ${平台} (${平台规矩[平台] || "General social media style, conversational and engaging."})
-Tone: ${风格} (${风格规矩[风格] || "Natural and authentic."})
+  // P1：品牌声音（用户保存的长期画像，注入到每次生成）
+  const 品牌块 = 参数.品牌声音
+    ? `\n\nBrand voice (saved by this user — follow it strictly in every variation):\n${参数.品牌声音}`
+    : "";
 
-Please write ${数量} copy variations from different angles.
+  return `Product info: ${参数.产品}
 
-Format reminder once more: the output MUST be a JSON array of length ${数量}, each element being one complete copy variation as a string. Example: ["copy 1","copy 2"].
-The array length must be exactly ${数量}, no more, no less.`;
+Platform: ${参数.平台} (${平台规矩[参数.平台] || "General social media style, conversational and engaging."})
+Tone: ${参数.风格} (${风格规矩[参数.风格] || "Natural and authentic."})
+${品牌块}
+
+Output language: ${语言指令}
+
+Please write ${参数.数量} copy variations from different angles.
+Use emojis naturally where the platform style calls for it (Instagram/TikTok: welcome; LinkedIn: sparingly; X: at most 1-2). Hashtags must be niche-relevant, never generic spam tags.
+
+Format reminder once more: the output MUST be a JSON array of length ${参数.数量}, each element being one complete copy variation as a string. Example: ["copy 1","copy 2"].
+The array length must be exactly ${参数.数量}, no more, no less.`;
 }
 
 // 生成文案的类型：可能成功（文案数组），也可能失败（原因）
@@ -79,6 +101,8 @@ export async function 生成文案(参数: {
   平台: string;
   风格: string;
   数量: number;
+  语言?: string;
+  品牌声音?: string;
 }): Promise<生成结果> {
   const key = process.env.DEEPSEEK_API_KEY;
 
@@ -104,7 +128,7 @@ export async function 生成文案(参数: {
         model: "deepseek-chat",
         messages: [
           { role: "system", content: 岗位说明书 },
-          { role: "user", content: 拼任务单(参数.产品, 参数.平台, 参数.风格, 参数.数量) },
+          { role: "user", content: 拼任务单(参数) },
         ],
         // temperature：0=保守复读机，2=放飞自我。营销文案取 1.0 平衡创意和稳定
         temperature: 1.0,
