@@ -7,7 +7,7 @@
 
 | # | 站点 | 地址 | 备注 |
 |---|------|------|------|
-| 1 | There's An AI For That | theresanaiforthat.com | 最大 AI 目录，流量最高，必提 |
+| 1 | There's An AI For That | theresanaiforthat.com | ⚠️ 2026-10 起已无免费提交：基础收录 $49 一次性，newsletter 套餐 $437。暂缓，等有付费数据后再决定 |
 | 2 | Futurepedia | futurepedia.io | 第二大 AI 目录 |
 | 3 | ToolFinder | toolfinder.co | 审核较快 |
 | 4 | SaaSHub | saashub.com | SaaS 目录，带外链权重 |
